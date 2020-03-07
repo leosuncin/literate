@@ -1,0 +1,94 @@
+name: CI
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: reviewdog/action-eslint@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        eslint_flags: --ext '.js' --ext '.ts' --ext '.tsx' .
+
+  tsc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: bahmutov/npm-install@v1
+    - uses: icrawl/action-tsc@v1
+
+  unit:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    needs: [lint, tsc]
+    steps:
+    - uses: actions/checkout@v1
+    - uses: bahmutov/npm-install@v1
+    - uses: actions/cache@v1
+      name: Cache Next.js build
+      with:
+        path: .next/cache
+        key: ${{ runner.os }}-next-build
+        restore-keys: |
+          ${{ runner.os }}-next-build-
+    - name: npm test
+      run: |
+        npm test -- --coverage
+      env:
+        CI: true
+    - uses: actions/upload-artifact@v1
+      with:
+        name: unit-coverage
+        path: coverage/unit
+
+  e2e:
+    runs-on: ubuntu-16.04
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    needs: unit
+    services:
+      mongodb:
+        image: mongo:4
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: JvAeJJZhH4
+          MONGO_INITDB_DATABASE: literate
+        ports:
+        - "27017-27019:27017-27019"
+    steps:
+    - uses: actions/checkout@v1
+    # just so we learn about available environment variables Zeit Now provides
+    - uses: hmarr/debug-action@master
+    - name: Cache Next.js build
+      uses: actions/cache@v1
+      with:
+        path: .next
+        key: ${{ runner.os }}-next-build-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-next-build-
+    - name: Cypress run
+      uses: cypress-io/github-action@v1
+      timeout-minutes: 10
+      env:
+        CODE_COVERAGE: true
+        MONGODB_URL: mongodb://root:JvAeJJZhH4@mongodb:${{ job.services.mongodb.ports[27017] }}/literate
+      with:
+        build: npm run build
+        start: npm start
+        wait-on: 'http://localhost:3000'
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: Cypress screenshots
+        path: cypress/screenshots
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: Cypress video
+        path: cypress/videos
+    - run: npx nyc report
+    - uses: actions/upload-artifact@v1
+      with:
+        name: e2e-coverage
+        path: coverage/e2e
