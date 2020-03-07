@@ -6,5 +6,6 @@ declare namespace NodeJS {
   export interface ProcessEnv {
     readonly PORT: string;
     readonly MONGODB_URL: string;
+    readonly APP_SECRET: string;
   }
 }
