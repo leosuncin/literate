@@ -4,7 +4,7 @@ export type HttpError =
       message: string;
     }
   | {
-      statusCode: 422;
+      statusCode: 422 | 400;
       message: string;
       errors: string[];
     };
