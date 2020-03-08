@@ -3,7 +3,7 @@ import { User } from 'models';
 
 export type JwtPayload = {
   id: string;
-  username: string;
+  displayName: string;
   iat: number;
   exp: number;
   iss: string;
@@ -18,4 +18,8 @@ export function signJWT(user: User): string {
     process.env.APP_SECRET,
     { expiresIn: '30 days' },
   );
+}
+
+export function decodeJWT(token: string): JwtPayload {
+  return jwt.verify(token, process.env.APP_SECRET) as JwtPayload;
 }
