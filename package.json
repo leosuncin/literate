@@ -19,10 +19,14 @@
     "test:e2e": "cypress run",
     "test:watch": "jest --watch"
   },
-  "keywords": ["React", "blog"],
+  "keywords": [
+    "React",
+    "blog"
+  ],
   "author": "Jaime Leonardo Suncin Cruz <leosuncin@gmail.com>",
   "license": "GPL-3.0",
   "dependencies": {
+    "@sindresorhus/slugify": "^0.11.0",
     "@xstate/react": "^0.8.1",
     "cross-fetch": "^3.0.4",
     "http-status-codes": "^1.4.0",
