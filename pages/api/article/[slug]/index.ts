@@ -20,11 +20,12 @@ const showArticleHandler: NextHttpHandler = async (req, res) => {
   );
 
   if (!article)
-    res.status(NOT_FOUND).json({
+    return res.status(NOT_FOUND).json({
       statusCode: NOT_FOUND,
       message: `Not found any article with slug: ${req.query.slug}`,
     });
-  else res.json(article.toJSON());
+
+  return res.json(article.toJSON());
 };
 const editArticleHandler: NextHttpHandler = async (req, res) => {
   let article = await Article.findOne({ slug: req.query.slug }).populate(
@@ -52,7 +53,7 @@ const editArticleHandler: NextHttpHandler = async (req, res) => {
 
   article = await article.save();
 
-  res.json(article.toJSON());
+  return res.json(article.toJSON());
 };
 const removeArticleHandler: NextHttpHandler = async (req, res) => {
   const article = await Article.findOne({ slug: req.query.slug }).populate(
@@ -115,7 +116,7 @@ export default validateMethod(
           )(req, res);
       }
     } catch (error) {
-      res.status(INTERNAL_SERVER_ERROR).json({
+      return res.status(INTERNAL_SERVER_ERROR).json({
         statusCode: INTERNAL_SERVER_ERROR,
         message: error.message,
       });
