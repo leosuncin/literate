@@ -56,10 +56,11 @@ const ArticleSchema = new Schema<Article>(
 
 ArticleSchema.plugin(mongooseUniqueValidator, { message: 'already exists' });
 ArticleSchema.pre<Article>('validate', function(next) {
-  this.slug =
-    slugify(this.title) +
-    '-' +
-    ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
+  const hash = this.slug
+    ? this.slug.substr(this.slug.lastIndexOf('-'))
+    : '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
+
+  this.slug = slugify(this.title) + hash;
 
   next();
 });
