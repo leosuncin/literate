@@ -1,4 +1,9 @@
-import { FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND } from 'http-status-codes';
+import {
+  FORBIDDEN,
+  INTERNAL_SERVER_ERROR,
+  NOT_FOUND,
+  NO_CONTENT,
+} from 'http-status-codes';
 import {
   connectDB,
   validateBody,
@@ -49,9 +54,28 @@ const editArticleHandler: NextHttpHandler = async (req, res) => {
 
   res.json(article.toJSON());
 };
+const removeArticleHandler: NextHttpHandler = async (req, res) => {
+  const article = await Article.findOne({ slug: req.query.slug }).populate(
+    'author',
+  );
+
+  if (!article)
+    return res.status(NOT_FOUND).json({
+      statusCode: NOT_FOUND,
+      message: `Not found any article with slug: ${req.query.slug}`,
+    });
+
+  if (article.author.id !== req.user.id)
+    return res.status(FORBIDDEN).json({
+      statusCode: FORBIDDEN,
+      message: 'You are not the author',
+    });
+
+  return res.status(NO_CONTENT).json(await article.remove());
+};
 
 export default validateMethod(
-  ['GET', 'PUT'],
+  ['GET', 'PUT', 'DELETE'],
   connectDB((req, res) => {
     try {
       switch (req.method) {
@@ -61,6 +85,8 @@ export default validateMethod(
           return withAuthentication(
             validateBody(ArticleUpdate, editArticleHandler),
           )(req, res);
+        case 'DELETE':
+          return withAuthentication(removeArticleHandler)(req, res);
       }
     } catch (error) {
       res.status(INTERNAL_SERVER_ERROR).json({
