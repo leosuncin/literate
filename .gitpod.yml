@@ -1,0 +1,11 @@
+tasks:
+  - before: cp .env.example .env
+    init: npm ci
+    command: npm run dev
+
+image:
+  file: .gitpod.Dockerfile
+
+ports:
+  - port: 3000
+    onOpen: open-preview
