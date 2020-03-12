@@ -15,9 +15,9 @@ import { ArticlePatch, ArticleUpdate } from 'schemas';
 import { NextHttpHandler } from 'types';
 
 const showArticleHandler: NextHttpHandler = async (req, res) => {
-  const article = await Article.findOne({ slug: req.query.slug }).populate(
-    'author',
-  );
+  const article = await Article.findOne({
+    slug: req.query.slug as string,
+  }).populate('author');
 
   if (!article)
     return res.status(NOT_FOUND).json({
@@ -28,9 +28,9 @@ const showArticleHandler: NextHttpHandler = async (req, res) => {
   return res.json(article.toJSON());
 };
 const editArticleHandler: NextHttpHandler = async (req, res) => {
-  let article = await Article.findOne({ slug: req.query.slug }).populate(
-    'author',
-  );
+  let article = await Article.findOne({
+    slug: req.query.slug as string,
+  }).populate('author');
 
   if (!article)
     return res.status(NOT_FOUND).json({
@@ -56,9 +56,9 @@ const editArticleHandler: NextHttpHandler = async (req, res) => {
   return res.json(article.toJSON());
 };
 const removeArticleHandler: NextHttpHandler = async (req, res) => {
-  const article = await Article.findOne({ slug: req.query.slug }).populate(
-    'author',
-  );
+  const article = await Article.findOne({
+    slug: req.query.slug as string,
+  }).populate('author');
 
   if (!article)
     return res.status(NOT_FOUND).json({
@@ -75,9 +75,9 @@ const removeArticleHandler: NextHttpHandler = async (req, res) => {
   return res.status(NO_CONTENT).json(await article.remove());
 };
 const patchArticleHandler: NextHttpHandler = async (req, res) => {
-  const article = await Article.findOne({ slug: req.query.slug }).populate(
-    'author',
-  );
+  const article = await Article.findOne({
+    slug: req.query.slug as string,
+  }).populate('author');
 
   if (!article)
     return res.status(NOT_FOUND).json({

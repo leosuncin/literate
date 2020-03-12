@@ -41,7 +41,7 @@ const editCommentHandler: NextHttpHandler = async (req, res) => {
 };
 const removeCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = await Comment.findById(req.query.id).populate('author');
-  const article = await Article.findOne({ slug: req.query.slug }).populate(
+  const article = await Article.findOne({ slug: req.query.slug as string }).populate(
     'author',
   );
 
