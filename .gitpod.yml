@@ -1,0 +1,14 @@
+tasks:
+  - before: |
+      cp .env.example .env
+      mkdir -p /workspace/data
+    init: npm ci
+    command: mongod --shutdown --quiet --dbpath /workspace/data
+    command: npm run dev
+
+image:
+  file: .gitpod.Dockerfile
+
+ports:
+  - port: 3000
+    onOpen: open-preview
