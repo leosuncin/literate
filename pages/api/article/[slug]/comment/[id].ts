@@ -1,11 +1,11 @@
-import { FORBIDDEN, NOT_FOUND } from 'http-status-codes';
+import { FORBIDDEN, NOT_FOUND, NO_CONTENT } from 'http-status-codes';
 import {
   connectDB,
   validateBody,
   validateMethod,
   withAuthentication,
 } from 'middlewares';
-import { Comment } from 'models';
+import { Article, Comment } from 'models';
 import { CommentSchema } from 'schemas';
 import { NextHttpHandler } from 'types';
 
@@ -39,9 +39,38 @@ const editCommentHandler: NextHttpHandler = async (req, res) => {
 
   return res.json(await comment.save());
 };
+const removeCommentHandler: NextHttpHandler = async (req, res) => {
+  const comment = await Comment.findById(req.query.id).populate('author');
+  const article = await Article.findOne({ slug: req.query.slug }).populate(
+    'author',
+  );
+
+  if (!article)
+    return res.status(NOT_FOUND).json({
+      statusCode: NOT_FOUND,
+      message: `Not found any article with slug: ${req.query.slug}`,
+    });
+
+  if (!comment)
+    return res.status(NOT_FOUND).json({
+      statusCode: NOT_FOUND,
+      message: `Not found any comment with id: ${req.query.id}`,
+    });
+
+  const hasAuthorization =
+    req.user.id === article.author.id || req.user.id === comment.author.id;
+
+  if (!hasAuthorization)
+    return res.status(FORBIDDEN).json({
+      statusCode: FORBIDDEN,
+      message: 'You are not the author of the article or comment',
+    });
+
+  return res.status(NO_CONTENT).json(await article.remove());
+};
 
 export default validateMethod(
-  ['GET', 'PUT'],
+  ['GET', 'PUT', 'DELETE'],
   connectDB((req, res) => {
     switch (req.method) {
       case 'GET':
@@ -50,6 +79,8 @@ export default validateMethod(
         return withAuthentication(
           validateBody(CommentSchema, editCommentHandler),
         )(req, res);
+      case 'DELETE':
+        return withAuthentication(removeCommentHandler)(req, res);
     }
   }),
 );
