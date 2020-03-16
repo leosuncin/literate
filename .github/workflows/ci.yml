@@ -37,7 +37,8 @@ jobs:
       run: |
         npm test -- --coverage
       env:
-        CI: true
+        CI: 'true'
+        APP_SECRET: 4C3E89619525956BA3573B8426F6C
     - uses: actions/upload-artifact@v1
       with:
         name: unit-coverage
@@ -71,8 +72,9 @@ jobs:
       uses: cypress-io/github-action@v1
       timeout-minutes: 10
       env:
-        CODE_COVERAGE: true
+        CODE_COVERAGE: 'true'
         MONGODB_URL: mongodb://root:JvAeJJZhH4@mongodb:${{ job.services.mongodb.ports[27017] }}/literate
+        APP_SECRET: 4C3E89619525956BA3573B8426F6C
       with:
         build: npm run build
         start: npm start
