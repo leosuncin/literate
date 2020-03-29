@@ -27,17 +27,19 @@ async function connectDB() {
   }
 }
 async function createToken() {
-  let user = await mongoose.models.User.findOne({
-    email: 'john@doe.me',
-  }).exec();
-
-  if (!user) {
-    user = await new mongoose.models.User({
+  const queryUser = { email: 'john@doe.me' };
+  await mongoose.models.User.findOneAndUpdate(
+    queryUser,
+    {
       fullName: 'John Doe',
       email: 'john@doe.me',
       password: 'Pa$$w0rd!',
-    }).save();
-  }
+    },
+    {
+      upsert: true,
+    },
+  ).exec();
+  const user = await mongoose.models.User.findOne(queryUser).exec();
 
   return signJWT(user);
 }

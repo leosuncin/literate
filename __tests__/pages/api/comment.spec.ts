@@ -14,6 +14,8 @@ import oneCommentApiHandler from 'pages/api/article/[slug]/comment/[id]';
 import { signJWT } from 'utils/jwt';
 
 async function prepareTest() {
+  const queryUser = { email: 'john@doe.me' };
+
   if (mongoose.connection.readyState !== 1) {
     await mongoose.connect(process.env.MONGODB_URL, {
       useNewUrlParser: true,
@@ -23,17 +25,18 @@ async function prepareTest() {
     });
   }
 
-  let user = await mongoose.models.User.findOne({
-    email: 'john@doe.me',
-  }).exec();
-
-  if (!user) {
-    user = await new mongoose.models.User({
+  await mongoose.models.User.findOneAndUpdate(
+    queryUser,
+    {
       fullName: 'John Doe',
       email: 'john@doe.me',
       password: 'Pa$$w0rd!',
-    }).save();
-  }
+    },
+    {
+      upsert: true,
+    },
+  ).exec();
+  const user = await mongoose.models.User.findOne(queryUser).exec();
 
   const token = signJWT(user);
   const article = await new mongoose.models.Article({
