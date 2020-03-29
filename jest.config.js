@@ -4,7 +4,7 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', 'dotenv/config'],
   moduleDirectories: ['node_modules', '.'],
   modulePathIgnorePatterns: ['<rootDir>/cypress'],
   coverageDirectory: '<rootDir>/coverage/unit',
