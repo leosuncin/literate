@@ -1,6 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Query, Schema } from 'mongoose';
 import mongooseUniqueValidator from 'mongoose-unique-validator';
-import { hash, compare } from 'utils/encrypt';
+import { compare, hash } from 'utils/encrypt';
 
 export interface User extends Document {
   fullName: string;
@@ -54,13 +54,13 @@ const UserSchema = new Schema<User>(
 );
 
 UserSchema.plugin(mongooseUniqueValidator, { message: 'is already taken' });
-UserSchema.methods.comparePassword = function(
+UserSchema.methods.comparePassword = function (
   this: User,
   plainPassword: string,
 ): boolean {
   return compare(this.password, plainPassword);
 };
-UserSchema.methods.toJSON = function(this: User) {
+UserSchema.methods.toJSON = function (this: User) {
   const obj = this.toObject();
 
   delete obj.password;
@@ -70,10 +70,16 @@ UserSchema.methods.toJSON = function(this: User) {
   return obj;
 };
 UserSchema.index({ displayName: 1, email: 1 });
-UserSchema.pre<User>('save', function(next) {
+UserSchema.pre<User>('save', function (next) {
   if (!this.isModified('password')) return next();
 
   this.password = hash(this.password, 512);
+
+  return next();
+});
+UserSchema.pre<Query<User>>('findOneAndUpdate', function (next) {
+  if ('password' in this.getUpdate())
+    this.getUpdate().password = hash(this.getUpdate().password, 512);
 
   return next();
 });
