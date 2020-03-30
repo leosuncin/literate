@@ -1,25 +1,21 @@
 import faker from 'faker';
 import {
+  CONFLICT,
   CREATED,
   METHOD_NOT_ALLOWED,
   UNPROCESSABLE_ENTITY,
-  CONFLICT,
 } from 'http-status-codes';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
 import registerHandler from 'pages/api/auth/register';
+import * as db from 'utils/db';
 
 describe('[POST] /api/auth/register', () => {
   let user;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URL, {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-    });
+    await db.connect();
     await mongoose.models.User.findOneAndUpdate(
       { email: 'john@doe.me' },
       { fullName: 'John Doe', email: 'john@doe.me' },
@@ -27,6 +23,11 @@ describe('[POST] /api/auth/register', () => {
     );
     user = await mongoose.models.User.findOne({ email: 'john@doe.me' });
   });
+
+  afterAll(async () => {
+    await db.disconnect();
+  });
+
   it('should validate the method', async () => {
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>();
 

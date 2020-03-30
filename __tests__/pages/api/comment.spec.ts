@@ -3,27 +3,19 @@ import {
   CREATED,
   FORBIDDEN,
   NOT_FOUND,
-  OK,
   NO_CONTENT,
+  OK,
 } from 'http-status-codes';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
 import commentApiHandler from 'pages/api/article/[slug]/comment';
 import oneCommentApiHandler from 'pages/api/article/[slug]/comment/[id]';
+import * as db from 'utils/db';
 import { signJWT } from 'utils/jwt';
 
 async function prepareTest() {
   const queryUser = { email: 'john@doe.me' };
-
-  if (mongoose.connection.readyState !== 1) {
-    await mongoose.connect(process.env.MONGODB_URL, {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-    });
-  }
 
   await mongoose.models.User.findOneAndUpdate(
     queryUser,
@@ -49,6 +41,14 @@ async function prepareTest() {
 
   return { token, article };
 }
+
+beforeAll(async () => {
+  await db.connect();
+});
+
+afterAll(async () => {
+  await db.disconnect();
+});
 
 describe('[POST] /api/article/[slug]/comment', () => {
   let token;

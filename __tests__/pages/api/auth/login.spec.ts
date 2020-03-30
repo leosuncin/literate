@@ -9,22 +9,22 @@ import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
 import loginHandler from 'pages/api/auth/login';
+import * as db from 'utils/db';
 
 describe('[POST] /api/auth/login', () => {
   let user;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URL, {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-    });
+    await db.connect();
     user = await new mongoose.models.User({
       fullName: faker.name.findName(),
       email: faker.internet.exampleEmail(),
       password: 'Pa$$w0rd!',
     }).save();
+  });
+
+  afterAll(async () => {
+    await db.disconnect();
   });
 
   it('should validate the method', async () => {

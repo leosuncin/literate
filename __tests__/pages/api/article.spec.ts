@@ -14,18 +14,9 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
 import articleApiHandler from 'pages/api/article';
 import oneArticleApiHandler from 'pages/api/article/[slug]';
+import * as db from 'utils/db';
 import { signJWT } from 'utils/jwt';
 
-async function connectDB() {
-  if (mongoose.connection.readyState !== 1) {
-    await mongoose.connect(process.env.MONGODB_URL, {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-    });
-  }
-}
 async function createToken() {
   const queryUser = { email: 'john@doe.me' };
   await mongoose.models.User.findOneAndUpdate(
@@ -44,11 +35,18 @@ async function createToken() {
   return signJWT(user);
 }
 
+beforeAll(async () => {
+  await db.connect();
+});
+
+afterAll(async () => {
+  await db.disconnect();
+});
+
 describe('[POST] /api/article', () => {
   let token;
 
   beforeAll(async () => {
-    await connectDB();
     token = await createToken();
   });
 
@@ -101,7 +99,6 @@ describe('[GET] /api/article/[slug]', () => {
   let article;
 
   beforeAll(async () => {
-    await connectDB();
     const user = await mongoose.models.User.findOne({
       email: 'john@doe.me',
     }).exec();
@@ -144,7 +141,6 @@ describe('[GET] /api/article/[slug]', () => {
 
 describe('[GET] /api/article', () => {
   beforeAll(async () => {
-    await connectDB();
     const user = await mongoose.models.User.findOne({
       email: 'john@doe.me',
     }).exec();
@@ -202,7 +198,6 @@ describe('[PUT] /api/article/[slug]', () => {
   let token;
 
   beforeAll(async () => {
-    await connectDB();
     token = await createToken();
     const user = await mongoose.models.User.findOne({
       email: 'john@doe.me',
@@ -326,7 +321,6 @@ describe('[PATCH] /api/article/[slug]', () => {
   let token;
 
   beforeAll(async () => {
-    await connectDB();
     token = await createToken();
     const user = await mongoose.models.User.findOne({
       email: 'john@doe.me',
@@ -409,7 +403,6 @@ describe('[DELETE] /api/article/[slug]', () => {
   let token;
 
   beforeAll(async () => {
-    await connectDB();
     token = await createToken();
     const user = await mongoose.models.User.findOne({
       email: 'john@doe.me',

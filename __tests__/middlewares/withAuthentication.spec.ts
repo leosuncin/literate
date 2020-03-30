@@ -4,23 +4,23 @@ import { withAuthentication } from 'middlewares/withAuthentication';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
+import * as db from 'utils/db';
 import { signJWT } from 'utils/jwt';
 
 describe('withAuthentication', () => {
   let user;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URL, {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-    });
+    await db.connect();
     user = await new mongoose.models.User({
       fullName: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password(),
     }).save();
+  });
+
+  afterAll(async () => {
+    await db.disconnect();
   });
 
   it('should require the `Authorization` header', async () => {
