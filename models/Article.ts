@@ -1,6 +1,7 @@
 import slugify from '@sindresorhus/slugify';
 import mongoose, { Document, Schema } from 'mongoose';
 import mongooseUniqueValidator from 'mongoose-unique-validator';
+
 import { User } from './User';
 
 export interface Article extends Document {
@@ -55,7 +56,7 @@ const ArticleSchema = new Schema<Article>(
 );
 
 ArticleSchema.plugin(mongooseUniqueValidator, { message: 'already exists' });
-ArticleSchema.pre<Article>('validate', function(next) {
+ArticleSchema.pre<Article>('validate', function (next) {
   const hash = this.slug
     ? this.slug.substr(this.slug.lastIndexOf('-'))
     : '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
@@ -64,7 +65,7 @@ ArticleSchema.pre<Article>('validate', function(next) {
 
   next();
 });
-ArticleSchema.methods.toJSON = function(this: Article) {
+ArticleSchema.methods.toJSON = function (this: Article) {
   const article = this.toObject();
 
   delete article.__v;

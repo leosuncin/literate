@@ -1,4 +1,4 @@
-import { FORBIDDEN, NOT_FOUND, NO_CONTENT } from 'http-status-codes';
+import { FORBIDDEN, NO_CONTENT, NOT_FOUND } from 'http-status-codes';
 import {
   connectDB,
   validateBody,
@@ -41,9 +41,9 @@ const editCommentHandler: NextHttpHandler = async (req, res) => {
 };
 const removeCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = await Comment.findById(req.query.id).populate('author');
-  const article = await Article.findOne({ slug: req.query.slug as string }).populate(
-    'author',
-  );
+  const article = await Article.findOne({
+    slug: req.query.slug as string,
+  }).populate('author');
 
   if (!article)
     return res.status(NOT_FOUND).json({

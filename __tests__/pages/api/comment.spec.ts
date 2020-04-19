@@ -2,8 +2,8 @@ import faker from 'faker';
 import {
   CREATED,
   FORBIDDEN,
-  NOT_FOUND,
   NO_CONTENT,
+  NOT_FOUND,
   OK,
 } from 'http-status-codes';
 import mongoose from 'mongoose';

@@ -1,5 +1,5 @@
-import { NextHttpHandler } from 'types';
 import { METHOD_NOT_ALLOWED } from 'http-status-codes';
+import { NextHttpHandler } from 'types';
 
 export function validateMethod(
   methods: string | string[],

@@ -1,4 +1,4 @@
-import { UNPROCESSABLE_ENTITY, getStatusText } from 'http-status-codes';
+import { getStatusText, UNPROCESSABLE_ENTITY } from 'http-status-codes';
 import { NextHttpHandler } from 'types';
 import { ObjectSchema } from 'yup';
 

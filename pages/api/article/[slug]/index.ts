@@ -1,8 +1,8 @@
 import {
   FORBIDDEN,
   INTERNAL_SERVER_ERROR,
-  NOT_FOUND,
   NO_CONTENT,
+  NOT_FOUND,
 } from 'http-status-codes';
 import {
   connectDB,

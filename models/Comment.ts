@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import mongooseIdValidator from 'mongoose-id-validator';
+
 import { Article, User } from '.';
 
 export interface Comment extends Document {
@@ -28,7 +29,7 @@ const CommentSchema = new Schema<Comment>(
   { timestamps: true },
 );
 CommentSchema.plugin(mongooseIdValidator, { message: 'not exits' });
-CommentSchema.methods.toJSON = function(this: Comment) {
+CommentSchema.methods.toJSON = function (this: Comment) {
   const comment: Comment = this.toObject();
 
   comment.id = comment._id;
