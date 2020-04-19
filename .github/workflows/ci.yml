@@ -59,8 +59,6 @@ jobs:
         - "27017-27019:27017-27019"
     steps:
     - uses: actions/checkout@v1
-    # just so we learn about available environment variables Zeit Now provides
-    - uses: hmarr/debug-action@master
     - name: Cache Next.js build
       uses: actions/cache@v1
       with:
@@ -68,6 +66,11 @@ jobs:
         key: ${{ runner.os }}-next-build-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-next-build-
+    - uses: bahmutov/npm-install@v1
+    - name: Load fixtures
+      run: npm run fixtures:load
+      env:
+        MONGODB_URL: mongodb://root:JvAeJJZhH4@mongodb:${{ job.services.mongodb.ports[27017] }}/literate
     - name: Cypress run
       uses: cypress-io/github-action@v1
       timeout-minutes: 10
