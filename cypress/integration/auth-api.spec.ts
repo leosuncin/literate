@@ -1,5 +1,5 @@
 import faker from 'faker';
-import { CREATED } from 'http-status-codes';
+import { CREATED, OK } from 'http-status-codes';
 
 describe('Auth api', () => {
   describe('Register', () => {
@@ -15,6 +15,21 @@ describe('Auth api', () => {
       })
         .get('status')
         .should('be', CREATED);
+    });
+  });
+
+  describe('Login', () => {
+    it('should sign in', () => {
+      cy.request({
+        url: '/api/auth/login',
+        method: 'POST',
+        body: {
+          email: Cypress.env('USER_EMAIL') || 'john@doe.me',
+          password: Cypress.env('USER_PASSWORD') || 'Pa$$w0rd!',
+        },
+      })
+        .get('status')
+        .should('be', OK);
     });
   });
 });
