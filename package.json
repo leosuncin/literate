@@ -42,7 +42,7 @@
     "next": "^9.3.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-hook-form": "^5.5.0",
+    "react-hook-form": "^5.5.1",
     "swr": "^0.2.0",
     "xstate": "^4.9.1",
     "yup": "^0.28.3"
