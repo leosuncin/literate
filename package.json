@@ -84,7 +84,7 @@
     "import-sort-parser-typescript": "^6.0.0",
     "import-sort-style-wes": "^3.0.2",
     "istanbul-lib-coverage": "^3.0.0",
-    "jest": "^25.3.0",
+    "jest": "^25.4.0",
     "jest-fetch-mock": "^3.0.3",
     "lint-staged": "^10.1.6",
     "node-mocks-http": "^1.8.1",
