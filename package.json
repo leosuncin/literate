@@ -48,7 +48,7 @@
     "yup": "^0.28.3"
   },
   "devDependencies": {
-    "@cypress/code-coverage": "^3.2.4",
+    "@cypress/code-coverage": "^3.3.0",
     "@cypress/webpack-preprocessor": "^5.1.2",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@shelf/jest-mongodb": "^1.1.5",
