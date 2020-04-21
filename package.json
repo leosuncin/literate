@@ -36,7 +36,7 @@
     "http-status-codes": "^1.4.0",
     "jsonwebtoken": "^8.5.1",
     "luxon": "^1.23.0",
-    "mongoose": "^5.9.9",
+    "mongoose": "^5.9.10",
     "mongoose-id-validator": "^0.5.4",
     "mongoose-unique-validator": "^2.0.3",
     "next": "^9.3.5",
