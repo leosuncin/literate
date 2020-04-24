@@ -1,6 +1,7 @@
 import { CONFLICT, CREATED, INTERNAL_SERVER_ERROR } from 'http-status-codes';
 import { connectDB, validateBody, validateMethod } from 'middlewares';
 import { User } from 'models';
+import log from 'ololog';
 import { AuthRegister } from 'schemas';
 import { NextHttpHandler } from 'types';
 import { signJWT } from 'utils/jwt';
@@ -18,11 +19,14 @@ const registerHandle: NextHttpHandler = async (req, res) => {
         statusCode: CONFLICT,
         message: `Email ${error.errors.email?.message}`,
       });
-    else
+    else {
+      log.error(`[${req.method}] ${req.url}`, error);
+
       return res.status(INTERNAL_SERVER_ERROR).json({
         statusCode: INTERNAL_SERVER_ERROR,
         message: error.message,
       });
+    }
   }
 };
 

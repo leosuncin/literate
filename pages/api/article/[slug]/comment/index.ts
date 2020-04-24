@@ -6,6 +6,7 @@ import {
   withAuthentication,
 } from 'middlewares';
 import { Article, Comment } from 'models';
+import log from 'ololog';
 import { CommentSchema, Pagination } from 'schemas';
 import { NextHttpHandler } from 'types';
 
@@ -56,6 +57,8 @@ export default validateMethod(
           return listCommentHandler(req, res);
       }
     } catch (error) {
+      log.error(`[${req.method}] ${req.url}`, error);
+
       return res.status(INTERNAL_SERVER_ERROR).json({
         statusCode: INTERNAL_SERVER_ERROR,
         message: error.message,

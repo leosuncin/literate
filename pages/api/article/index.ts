@@ -11,6 +11,7 @@ import {
   withAuthentication,
 } from 'middlewares';
 import { Article } from 'models';
+import log from 'ololog';
 import { ArticleCreate, Pagination } from 'schemas';
 import { NextHttpHandler } from 'types';
 
@@ -52,6 +53,8 @@ export default validateMethod(
           return findArticleHandler(req, res);
       }
     } catch (error) {
+      log.error(`[${req.method}] ${req.url}`, error);
+
       return res.status(INTERNAL_SERVER_ERROR).json({
         statusCode: INTERNAL_SERVER_ERROR,
         message: error.message,

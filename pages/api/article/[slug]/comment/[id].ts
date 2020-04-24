@@ -1,4 +1,9 @@
-import { FORBIDDEN, NO_CONTENT, NOT_FOUND } from 'http-status-codes';
+import {
+  FORBIDDEN,
+  INTERNAL_SERVER_ERROR,
+  NO_CONTENT,
+  NOT_FOUND,
+} from 'http-status-codes';
 import {
   connectDB,
   validateBody,
@@ -6,6 +11,7 @@ import {
   withAuthentication,
 } from 'middlewares';
 import { Article, Comment } from 'models';
+import log from 'ololog';
 import { CommentSchema } from 'schemas';
 import { NextHttpHandler } from 'types';
 
@@ -72,15 +78,24 @@ const removeCommentHandler: NextHttpHandler = async (req, res) => {
 export default validateMethod(
   ['GET', 'PUT', 'DELETE'],
   connectDB((req, res) => {
-    switch (req.method) {
-      case 'GET':
-        return showCommentHandler(req, res);
-      case 'PUT':
-        return withAuthentication(
-          validateBody(CommentSchema, editCommentHandler),
-        )(req, res);
-      case 'DELETE':
-        return withAuthentication(removeCommentHandler)(req, res);
+    try {
+      switch (req.method) {
+        case 'GET':
+          return showCommentHandler(req, res);
+        case 'PUT':
+          return withAuthentication(
+            validateBody(CommentSchema, editCommentHandler),
+          )(req, res);
+        case 'DELETE':
+          return withAuthentication(removeCommentHandler)(req, res);
+      }
+    } catch (error) {
+      log.error(`[${req.method}] ${req.url}`);
+
+      return res.status(INTERNAL_SERVER_ERROR).json({
+        statusCode: INTERNAL_SERVER_ERROR,
+        message: error.message,
+      });
     }
   }),
 );
