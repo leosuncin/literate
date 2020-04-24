@@ -6,7 +6,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: reviewdog/action-eslint@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -15,7 +15,7 @@ jobs:
   tsc:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: bahmutov/npm-install@v1
     - uses: icrawl/action-tsc@v1
 
@@ -24,7 +24,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     needs: [lint, tsc]
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: bahmutov/npm-install@v1
     - uses: actions/cache@v1
       name: Cache Next.js build
@@ -58,7 +58,7 @@ jobs:
         ports:
         - "27017-27019:27017-27019"
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Cache Next.js build
       uses: actions/cache@v1
       with:
@@ -97,3 +97,38 @@ jobs:
       with:
         name: e2e-coverage
         path: coverage/e2e
+
+  api:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    needs: [lint, tsc]
+    services:
+      mongodb:
+        image: mongo:4
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: JvAeJJZhH4
+          MONGO_INITDB_DATABASE: literate
+        ports:
+        - "27017-27019:27017-27019"
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache Next.js build
+      uses: actions/cache@v1
+      with:
+        path: .next
+        key: ${{ runner.os }}-next-build-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-next-build-
+    - uses: bahmutov/npm-install@v1
+    - name: Prepare, build and run
+      run: |
+        npm run fixtures:rebuild
+        npm run build
+        npm start &
+        npx newman run https://api.getpostman.com/collections/367460-806c64d2-beba-4bfe-a2d6-7a346abab79d?apikey=$POSTMAN_API_KEY
+      env:
+        MONGODB_URL: mongodb://root:JvAeJJZhH4@mongodb:${{ job.services.mongodb.ports[27017] }}/literate
+        APP_SECRET: 4C3E89619525956BA3573B8426F6C
+        NODE_ENV: production
+        POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
