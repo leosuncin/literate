@@ -76,7 +76,7 @@ jobs:
       timeout-minutes: 10
       env:
         CODE_COVERAGE: 'true'
-        MONGODB_URL: mongodb://root:JvAeJJZhH4@mongodb:${{ job.services.mongodb.ports[27017] }}/literate
+        MONGODB_URL: mongodb://root:JvAeJJZhH4@localhost:${{ job.services.mongodb.ports[27017] }}/literate
         APP_SECRET: 4C3E89619525956BA3573B8426F6C
       with:
         build: npm run build
@@ -128,7 +128,7 @@ jobs:
         npm start &
         npx newman run https://api.getpostman.com/collections/367460-806c64d2-beba-4bfe-a2d6-7a346abab79d?apikey=$POSTMAN_API_KEY
       env:
-        MONGODB_URL: mongodb://root:JvAeJJZhH4@mongodb:${{ job.services.mongodb.ports[27017] }}/literate
+        MONGODB_URL: mongodb://root:JvAeJJZhH4@localhost:${{ job.services.mongodb.ports[27017] }}/literate
         APP_SECRET: 4C3E89619525956BA3573B8426F6C
         NODE_ENV: production
         POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
