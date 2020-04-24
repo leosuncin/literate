@@ -51,12 +51,8 @@ jobs:
     services:
       mongodb:
         image: mongo:4
-        env:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: JvAeJJZhH4
-          MONGO_INITDB_DATABASE: literate
         ports:
-        - "27017-27019:27017-27019"
+        - "27017:27017"
     steps:
     - uses: actions/checkout@v2
     - name: Cache Next.js build
@@ -70,13 +66,13 @@ jobs:
     - name: Load fixtures
       run: npm run fixtures:load
       env:
-        MONGODB_URL: mongodb://root:JvAeJJZhH4@mongodb:${{ job.services.mongodb.ports[27017] }}/literate
+        MONGODB_URL: mongodb://localhost:${{ job.services.mongodb.ports[27017] }}/admin
     - name: Cypress run
       uses: cypress-io/github-action@v1
       timeout-minutes: 10
       env:
         CODE_COVERAGE: 'true'
-        MONGODB_URL: mongodb://root:JvAeJJZhH4@localhost:${{ job.services.mongodb.ports[27017] }}/literate
+        MONGODB_URL: mongodb://localhost:${{ job.services.mongodb.ports[27017] }}/admin
         APP_SECRET: 4C3E89619525956BA3573B8426F6C
       with:
         build: npm run build
@@ -105,12 +101,8 @@ jobs:
     services:
       mongodb:
         image: mongo:4
-        env:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: JvAeJJZhH4
-          MONGO_INITDB_DATABASE: literate
         ports:
-        - "27017-27019:27017-27019"
+        - "27017:27017"
     steps:
     - uses: actions/checkout@v2
     - name: Cache Next.js build
@@ -121,17 +113,14 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-next-build-
     - uses: bahmutov/npm-install@v1
-    - run: npm run fixtures:load
-      env:
-        MONGODB_URL: mongodb://root:JvAeJJZhH4@mongodb:${{ job.services.mongodb.ports[27017] }}/literate
     - name: Prepare, build and run
       run: |
+        npm run fixtures:rebuild
         npm run build
         npm start &
-        echo -e $MONGODB_URL $APP_SECRET $NODE_ENV
         npx newman run https://api.getpostman.com/collections/367460-806c64d2-beba-4bfe-a2d6-7a346abab79d?apikey=$POSTMAN_API_KEY
       env:
-        MONGODB_URL: mongodb://root:JvAeJJZhH4@localhost:${{ job.services.mongodb.ports[27017] }}/literate
+        MONGODB_URL: mongodb://localhost:${{ job.services.mongodb.ports[27017] }}/admin
         APP_SECRET: 4C3E89619525956BA3573B8426F6C
         NODE_ENV: production
         POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
