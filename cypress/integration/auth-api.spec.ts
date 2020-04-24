@@ -12,6 +12,7 @@ describe('Auth api', () => {
           email: faker.internet.exampleEmail(),
           password: faker.internet.password(8, true),
         },
+        retryOnNetworkFailure: true,
       })
         .get('status')
         .should('be', CREATED);
@@ -27,6 +28,7 @@ describe('Auth api', () => {
           email: Cypress.env('USER_EMAIL') || 'john@doe.me',
           password: Cypress.env('USER_PASSWORD') || 'Pa$$w0rd!',
         },
+        retryOnNetworkFailure: true,
       })
         .get('status')
         .should('be', OK);
