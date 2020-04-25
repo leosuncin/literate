@@ -50,7 +50,7 @@ jobs:
     needs: [lint, tsc]
     services:
       mongodb:
-        image: mongo:4
+        image: healthcheck/mongo
         ports:
         - "27017:27017"
     steps:
@@ -63,20 +63,20 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-next-build-
     - uses: bahmutov/npm-install@v1
-    - name: Load fixtures
-      run: npm run fixtures:load
+    - name: Prepare DB, build and start Next.js
+      run: |
+        npm run fixtures:load
+        npm run build
+        npm start &
       env:
-        MONGODB_URL: mongodb://localhost:${{ job.services.mongodb.ports[27017] }}/admin
-    - name: Cypress run
-      uses: cypress-io/github-action@v1
-      timeout-minutes: 10
-      env:
-        CODE_COVERAGE: 'true'
         MONGODB_URL: mongodb://localhost:${{ job.services.mongodb.ports[27017] }}/admin
         APP_SECRET: 4C3E89619525956BA3573B8426F6C
+        NODE_ENV: production
+        CODE_COVERAGE: true
+    - name: Run Cypress
+      uses: cypress-io/github-action@v1
       with:
-        build: npm run build
-        start: npm start
+        install: false
         wait-on: 'http://localhost:3000'
     - uses: actions/upload-artifact@v1
       if: failure()
@@ -89,38 +89,12 @@ jobs:
         name: Cypress video
         path: cypress/videos
     - run: npx nyc report
+    - name: Run Newman
+      run: |
+        npx newman run https://api.getpostman.com/collections/367460-806c64d2-beba-4bfe-a2d6-7a346abab79d?apikey=$POSTMAN_API_KEY
+      env:
+        POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
     - uses: actions/upload-artifact@v1
       with:
         name: e2e-coverage
         path: coverage/e2e
-
-  api:
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    needs: [lint, tsc]
-    services:
-      mongodb:
-        image: mongo:4
-        ports:
-        - "27017:27017"
-    steps:
-    - uses: actions/checkout@v2
-    - name: Cache Next.js build
-      uses: actions/cache@v1
-      with:
-        path: .next
-        key: ${{ runner.os }}-next-build-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-next-build-
-    - uses: bahmutov/npm-install@v1
-    - name: Prepare, build and run
-      run: |
-        npm run fixtures:rebuild
-        npm run build
-        npm start &
-        npx newman run https://api.getpostman.com/collections/367460-806c64d2-beba-4bfe-a2d6-7a346abab79d?apikey=$POSTMAN_API_KEY
-      env:
-        MONGODB_URL: mongodb://localhost:${{ job.services.mongodb.ports[27017] }}/admin
-        APP_SECRET: 4C3E89619525956BA3573B8426F6C
-        NODE_ENV: production
-        POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
