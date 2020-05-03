@@ -46,7 +46,7 @@
     "react-hook-form": "^5.6.1",
     "swr": "^0.2.0",
     "xstate": "^4.9.1",
-    "yup": "^0.28.4"
+    "yup": "^0.28.5"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.7.0",
