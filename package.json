@@ -37,7 +37,7 @@
     "jsonwebtoken": "^8.5.1",
     "luxon": "^1.24.1",
     "mongoose": "^5.9.13",
-    "mongoose-id-validator": "^0.5.4",
+    "mongoose-id-validator": "^0.6.0",
     "mongoose-unique-validator": "^2.0.3",
     "next": "^9.3.6",
     "ololog": "^1.1.156",
