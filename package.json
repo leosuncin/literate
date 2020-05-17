@@ -101,7 +101,7 @@
     "ts-jest": "^25.4.0",
     "ts-loader": "^7.0.3",
     "ts-node": "^8.10.1",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.2"
   },
   "nyc": {
     "extends": "@istanbuljs/nyc-config-typescript",
