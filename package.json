@@ -78,7 +78,7 @@
     "eslint-plugin-cypress": "^2.10.3",
     "eslint-plugin-jest": "^23.10.0",
     "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-react-hooks": "^4.0.0",
     "faker": "^4.1.0",
     "husky": "^4.2.5",
