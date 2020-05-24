@@ -45,7 +45,7 @@
     "react-dom": "^16.13.1",
     "react-hook-form": "^5.7.2",
     "swr": "^0.2.0",
-    "xstate": "^4.9.1",
+    "xstate": "^4.10.0",
     "yup": "^0.28.5"
   },
   "devDependencies": {
