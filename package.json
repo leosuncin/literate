@@ -30,7 +30,7 @@
     "blog"
   ],
   "dependencies": {
-    "@sindresorhus/slugify": "^1.0.0",
+    "@sindresorhus/slugify": "^1.1.0",
     "@xstate/react": "^0.8.1",
     "cross-fetch": "^3.0.5",
     "http-status-codes": "^1.4.0",
