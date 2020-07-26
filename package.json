@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.8.1",
-    "@cypress/webpack-preprocessor": "^5.4.1",
+    "@cypress/webpack-preprocessor": "^5.4.2",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@shelf/jest-mongodb": "^1.2.1",
     "@testing-library/cypress": "^6.0.0",
