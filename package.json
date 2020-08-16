@@ -58,7 +58,7 @@
     "@testing-library/react": "^10.4.8",
     "@testing-library/user-event": "^12.1.1",
     "@types/faker": "^4.1.12",
-    "@types/jest": "^26.0.9",
+    "@types/jest": "^26.0.10",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/mongoose": "^5.7.36",
     "@types/mongoose-unique-validator": "^1.0.4",
