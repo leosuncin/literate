@@ -99,7 +99,7 @@
     "source-map-support": "^0.5.19",
     "start-server-and-test": "^1.11.3",
     "ts-jest": "^25.5.1",
-    "ts-loader": "^8.0.2",
+    "ts-loader": "^8.0.3",
     "ts-node": "^9.0.0",
     "typescript": "^3.9.7"
   },
