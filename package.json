@@ -52,7 +52,7 @@
     "@cypress/code-coverage": "^3.8.1",
     "@cypress/webpack-preprocessor": "^5.4.5",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@shelf/jest-mongodb": "^1.2.2",
+    "@shelf/jest-mongodb": "^1.2.3",
     "@testing-library/cypress": "^6.0.1",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^10.4.9",
