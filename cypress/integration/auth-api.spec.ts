@@ -1,10 +1,5 @@
 import faker from 'faker';
-import {
-  CREATED,
-  OK,
-  UNAUTHORIZED,
-  UNPROCESSABLE_ENTITY,
-} from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 
 describe('Auth api', () => {
   describe('Register', () => {
@@ -15,7 +10,7 @@ describe('Auth api', () => {
         password: faker.internet.password(8, true),
       })
         .get('status')
-        .should('be', CREATED);
+        .should('be', StatusCodes.CREATED);
     });
 
     it('should validate the payload', () => {
@@ -30,7 +25,7 @@ describe('Auth api', () => {
         failOnStatusCode: false,
       })
         .get('status')
-        .should('be', UNPROCESSABLE_ENTITY);
+        .should('be', StatusCodes.UNPROCESSABLE_ENTITY);
     });
   });
 
@@ -41,7 +36,7 @@ describe('Auth api', () => {
         password: Cypress.env('USER_PASSWORD') || 'Pa$$w0rd!',
       })
         .get('status')
-        .should('be', OK);
+        .should('be', StatusCodes.OK);
     });
 
     it('should validate the payload', () => {
@@ -55,7 +50,7 @@ describe('Auth api', () => {
         failOnStatusCode: false,
       })
         .get('status')
-        .should('be', UNPROCESSABLE_ENTITY);
+        .should('be', StatusCodes.UNPROCESSABLE_ENTITY);
     });
 
     it('should fail to sign in', () => {
@@ -69,7 +64,7 @@ describe('Auth api', () => {
         failOnStatusCode: false,
       })
         .get('status')
-        .should('be', UNAUTHORIZED);
+        .should('be', StatusCodes.UNAUTHORIZED);
       cy.request({
         url: '/api/auth/login',
         method: 'POST',
@@ -80,7 +75,7 @@ describe('Auth api', () => {
         failOnStatusCode: false,
       })
         .get('status')
-        .should('be', UNAUTHORIZED);
+        .should('be', StatusCodes.UNAUTHORIZED);
     });
   });
 });
