@@ -1,10 +1,6 @@
 import faker from 'faker';
-import {
-  METHOD_NOT_ALLOWED,
-  OK,
-  UNAUTHORIZED,
-  UNPROCESSABLE_ENTITY,
-} from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
+import type { User } from 'models';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -12,7 +8,7 @@ import loginHandler from 'pages/api/auth/login';
 import * as db from 'utils/db';
 
 describe('[POST] /api/auth/login', () => {
-  let user;
+  let user: User;
 
   beforeAll(async () => {
     await db.connect();
@@ -32,7 +28,7 @@ describe('[POST] /api/auth/login', () => {
 
     await loginHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(METHOD_NOT_ALLOWED);
+    expect(res._getStatusCode()).toBe(StatusCodes.METHOD_NOT_ALLOWED);
   });
 
   it('should validate the body', async () => {
@@ -43,7 +39,7 @@ describe('[POST] /api/auth/login', () => {
 
     await loginHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNPROCESSABLE_ENTITY);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNPROCESSABLE_ENTITY);
   });
 
   it('should fail to log with unregistered email', async () => {
@@ -57,7 +53,7 @@ describe('[POST] /api/auth/login', () => {
 
     await loginHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNAUTHORIZED);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   it('should fail to log with invalid password', async () => {
@@ -71,7 +67,7 @@ describe('[POST] /api/auth/login', () => {
 
     await loginHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNAUTHORIZED);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   it('should allow to log in existing user', async () => {
@@ -85,6 +81,6 @@ describe('[POST] /api/auth/login', () => {
 
     await loginHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(OK);
+    expect(res._getStatusCode()).toBe(StatusCodes.OK);
   });
 });

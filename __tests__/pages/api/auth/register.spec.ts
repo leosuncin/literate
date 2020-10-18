@@ -1,10 +1,6 @@
 import faker from 'faker';
-import {
-  CONFLICT,
-  CREATED,
-  METHOD_NOT_ALLOWED,
-  UNPROCESSABLE_ENTITY,
-} from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
+import type { User } from 'models';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -12,7 +8,7 @@ import registerHandler from 'pages/api/auth/register';
 import * as db from 'utils/db';
 
 describe('[POST] /api/auth/register', () => {
-  let user;
+  let user: User;
 
   beforeAll(async () => {
     await db.connect();
@@ -33,7 +29,7 @@ describe('[POST] /api/auth/register', () => {
 
     await registerHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(METHOD_NOT_ALLOWED);
+    expect(res._getStatusCode()).toBe(StatusCodes.METHOD_NOT_ALLOWED);
   });
 
   it('should validate the body', async () => {
@@ -44,7 +40,7 @@ describe('[POST] /api/auth/register', () => {
 
     await registerHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNPROCESSABLE_ENTITY);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNPROCESSABLE_ENTITY);
   });
 
   it('should allow to register a new user', async () => {
@@ -59,7 +55,7 @@ describe('[POST] /api/auth/register', () => {
 
     await registerHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(CREATED);
+    expect(res._getStatusCode()).toBe(StatusCodes.CREATED);
   });
 
   it('should fail to register a duplicate email', async () => {
@@ -74,6 +70,6 @@ describe('[POST] /api/auth/register', () => {
 
     await registerHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(CONFLICT);
+    expect(res._getStatusCode()).toBe(StatusCodes.CONFLICT);
   });
 });

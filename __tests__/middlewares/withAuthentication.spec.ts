@@ -1,6 +1,7 @@
 import faker from 'faker';
-import { FORBIDDEN, UNAUTHORIZED } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import { withAuthentication } from 'middlewares/withAuthentication';
+import type { User } from 'models';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -8,7 +9,7 @@ import * as db from 'utils/db';
 import { signJWT } from 'utils/jwt';
 
 describe('withAuthentication', () => {
-  let user;
+  let user: User;
 
   beforeAll(async () => {
     await db.connect();
@@ -29,7 +30,7 @@ describe('withAuthentication', () => {
 
     await withAuthentication(handler)(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNAUTHORIZED);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -43,7 +44,7 @@ describe('withAuthentication', () => {
 
     await withAuthentication(handler)(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNAUTHORIZED);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -59,7 +60,7 @@ describe('withAuthentication', () => {
 
     await withAuthentication(handler)(req as any, res);
 
-    expect(res._getStatusCode()).toBe(FORBIDDEN);
+    expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -77,7 +78,7 @@ describe('withAuthentication', () => {
 
     await withAuthentication(handler)(req as any, res);
 
-    expect(res._getStatusCode()).toBe(FORBIDDEN);
+    expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
     expect(handler).not.toHaveBeenCalled();
   });
 

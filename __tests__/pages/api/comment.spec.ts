@@ -1,11 +1,6 @@
 import faker from 'faker';
-import {
-  CREATED,
-  FORBIDDEN,
-  NO_CONTENT,
-  NOT_FOUND,
-  OK,
-} from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
+import type { Article, Comment } from 'models';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -51,8 +46,8 @@ afterAll(async () => {
 });
 
 describe('[POST] /api/article/[slug]/comment', () => {
-  let token;
-  let article;
+  let token: string;
+  let article: Article;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -76,7 +71,7 @@ describe('[POST] /api/article/[slug]/comment', () => {
 
     await commentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should add a new comment', async () => {
@@ -95,12 +90,12 @@ describe('[POST] /api/article/[slug]/comment', () => {
 
     await commentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(CREATED);
+    expect(res._getStatusCode()).toBe(StatusCodes.CREATED);
   });
 });
 
 describe('[GET] /api/article/[slug]/comment/[id]', () => {
-  let comment;
+  let comment: Comment;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -124,7 +119,7 @@ describe('[GET] /api/article/[slug]/comment/[id]', () => {
 
     await oneCommentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should get one comment', async () => {
@@ -137,12 +132,12 @@ describe('[GET] /api/article/[slug]/comment/[id]', () => {
 
     await oneCommentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(OK);
+    expect(res._getStatusCode()).toBe(StatusCodes.OK);
   });
 });
 
 describe('[GET] /api/article/[slug]/comment', () => {
-  let article;
+  let article: Article;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -158,7 +153,7 @@ describe('[GET] /api/article/[slug]/comment', () => {
 
     await commentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should list the comments', async () => {
@@ -170,14 +165,14 @@ describe('[GET] /api/article/[slug]/comment', () => {
 
     await commentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(OK);
+    expect(res._getStatusCode()).toBe(StatusCodes.OK);
     expect(Array.isArray(res._getJSONData())).toBe(true);
   });
 });
 
 describe('[PUT] /api/article/[slug]/comment/[id]', () => {
-  let token;
-  let comment;
+  let token: string;
+  let comment: Comment;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -209,7 +204,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
 
     await oneCommentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should not allow to edit a comment that belong to other', async () => {
@@ -234,7 +229,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
 
     await oneCommentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(FORBIDDEN);
+    expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
   });
 
   it('should edit a comment', async () => {
@@ -254,13 +249,13 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
 
     await oneCommentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(OK);
+    expect(res._getStatusCode()).toBe(StatusCodes.OK);
   });
 });
 
 describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
-  let token;
-  let comment;
+  let token: string;
+  let comment: Comment;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -291,7 +286,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
 
     await oneCommentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should fail when comment not exists', async () => {
@@ -308,7 +303,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
 
     await oneCommentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should not allow to remove a comment that belong to other', async () => {
@@ -330,7 +325,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
 
     await oneCommentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(FORBIDDEN);
+    expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
   });
 
   it('should remove a comment', async () => {
@@ -347,6 +342,6 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
 
     await oneCommentApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NO_CONTENT);
+    expect(res._getStatusCode()).toBe(StatusCodes.NO_CONTENT);
   });
 });

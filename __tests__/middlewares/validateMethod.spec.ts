@@ -1,4 +1,4 @@
-import { METHOD_NOT_ALLOWED } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import { validateMethod } from 'middlewares/validateMethod';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -12,7 +12,7 @@ describe('validateMethod', () => {
 
     validateMethod('GET', handler)(req as any, res);
 
-    expect(res._getStatusCode()).toBe(METHOD_NOT_ALLOWED);
+    expect(res._getStatusCode()).toBe(StatusCodes.METHOD_NOT_ALLOWED);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -24,7 +24,7 @@ describe('validateMethod', () => {
 
     validateMethod(['POST', 'PUT'], handler)(req as any, res);
 
-    expect(res._getStatusCode()).toBe(METHOD_NOT_ALLOWED);
+    expect(res._getStatusCode()).toBe(StatusCodes.METHOD_NOT_ALLOWED);
     expect(handler).not.toHaveBeenCalled();
   });
 

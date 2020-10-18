@@ -1,5 +1,5 @@
 import faker from 'faker';
-import { UNPROCESSABLE_ENTITY } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import { validateBody } from 'middlewares/validateBody';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -18,7 +18,7 @@ describe('validateBody', () => {
 
     await validateBody(schema, handler)(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNPROCESSABLE_ENTITY);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNPROCESSABLE_ENTITY);
     expect(handler).not.toHaveBeenCalled();
   });
 

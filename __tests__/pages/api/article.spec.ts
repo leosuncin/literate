@@ -1,14 +1,6 @@
 import faker from 'faker';
-import {
-  BAD_REQUEST,
-  CREATED,
-  FORBIDDEN,
-  NO_CONTENT,
-  NOT_FOUND,
-  OK,
-  UNAUTHORIZED,
-  UNPROCESSABLE_ENTITY,
-} from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
+import type { Article } from 'models';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -44,7 +36,7 @@ afterAll(async () => {
 });
 
 describe('[POST] /api/article', () => {
-  let token;
+  let token: string;
 
   beforeAll(async () => {
     token = await createToken();
@@ -58,7 +50,7 @@ describe('[POST] /api/article', () => {
 
     await articleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNAUTHORIZED);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   it('should validate the body', async () => {
@@ -72,7 +64,7 @@ describe('[POST] /api/article', () => {
 
     await articleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNPROCESSABLE_ENTITY);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNPROCESSABLE_ENTITY);
   });
 
   it('should create an article', async () => {
@@ -91,12 +83,12 @@ describe('[POST] /api/article', () => {
 
     await articleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(CREATED);
+    expect(res._getStatusCode()).toBe(StatusCodes.CREATED);
   });
 });
 
 describe('[GET] /api/article/[slug]', () => {
-  let article;
+  let article: Article;
 
   beforeAll(async () => {
     const user = await mongoose.models.User.findOne({
@@ -121,7 +113,7 @@ describe('[GET] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should get one article', async () => {
@@ -134,7 +126,7 @@ describe('[GET] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(OK);
+    expect(res._getStatusCode()).toBe(StatusCodes.OK);
     expect(res._getJSONData()).toHaveProperty('author');
   });
 });
@@ -180,7 +172,7 @@ describe('[GET] /api/article', () => {
 
     await articleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(BAD_REQUEST);
+    expect(res._getStatusCode()).toBe(StatusCodes.BAD_REQUEST);
   });
 
   it('should list the articles', async () => {
@@ -188,14 +180,14 @@ describe('[GET] /api/article', () => {
 
     await articleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(OK);
+    expect(res._getStatusCode()).toBe(StatusCodes.OK);
     expect(Array.isArray(res._getJSONData())).toBe(true);
   });
 });
 
 describe('[PUT] /api/article/[slug]', () => {
-  let article;
-  let token;
+  let article: Article;
+  let token: string;
 
   beforeAll(async () => {
     token = await createToken();
@@ -222,7 +214,7 @@ describe('[PUT] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNAUTHORIZED);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   it('should validate the body', async () => {
@@ -241,7 +233,7 @@ describe('[PUT] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNPROCESSABLE_ENTITY);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNPROCESSABLE_ENTITY);
   });
 
   it('should fail when article not exists', async () => {
@@ -263,7 +255,7 @@ describe('[PUT] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should not allow to edit an article that belong to other', async () => {
@@ -290,7 +282,7 @@ describe('[PUT] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(FORBIDDEN);
+    expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
   });
 
   it('should edit an article', async () => {
@@ -312,13 +304,13 @@ describe('[PUT] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(OK);
+    expect(res._getStatusCode()).toBe(StatusCodes.OK);
   });
 });
 
 describe('[PATCH] /api/article/[slug]', () => {
-  let article;
-  let token;
+  let article: Article;
+  let token: string;
 
   beforeAll(async () => {
     token = await createToken();
@@ -350,7 +342,7 @@ describe('[PATCH] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should not allow to change state of an article that belong to other', async () => {
@@ -374,7 +366,7 @@ describe('[PATCH] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(FORBIDDEN);
+    expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
   });
 
   it('should change the state of an article', async () => {
@@ -393,14 +385,14 @@ describe('[PATCH] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(OK);
+    expect(res._getStatusCode()).toBe(StatusCodes.OK);
     expect(res._getJSONData()).toHaveProperty('draft', false);
   });
 });
 
 describe('[DELETE] /api/article/[slug]', () => {
-  let article;
-  let token;
+  let article: Article;
+  let token: string;
 
   beforeAll(async () => {
     token = await createToken();
@@ -426,7 +418,7 @@ describe('[DELETE] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(UNAUTHORIZED);
+    expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   it('should fail when article not exists', async () => {
@@ -442,7 +434,7 @@ describe('[DELETE] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NOT_FOUND);
+    expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
   });
 
   it('should not allow to remove an article that belong to other', async () => {
@@ -463,7 +455,7 @@ describe('[DELETE] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(FORBIDDEN);
+    expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
   });
 
   it('should remove an article', async () => {
@@ -479,6 +471,6 @@ describe('[DELETE] /api/article/[slug]', () => {
 
     await oneArticleApiHandler(req as any, res);
 
-    expect(res._getStatusCode()).toBe(NO_CONTENT);
+    expect(res._getStatusCode()).toBe(StatusCodes.NO_CONTENT);
   });
 });
