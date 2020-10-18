@@ -1,9 +1,4 @@
-import {
-  FORBIDDEN,
-  INTERNAL_SERVER_ERROR,
-  NO_CONTENT,
-  NOT_FOUND,
-} from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import {
   connectDB,
   validateBody,
@@ -21,8 +16,8 @@ const showArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    return res.status(NOT_FOUND).json({
-      statusCode: NOT_FOUND,
+    return res.status(StatusCodes.NOT_FOUND).json({
+      statusCode: StatusCodes.NOT_FOUND,
       message: `Not found any article with slug: ${req.query.slug}`,
     });
 
@@ -34,14 +29,14 @@ const editArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    return res.status(NOT_FOUND).json({
-      statusCode: NOT_FOUND,
+    return res.status(StatusCodes.NOT_FOUND).json({
+      statusCode: StatusCodes.NOT_FOUND,
       message: `Not found any article with slug: ${req.query.slug}`,
     });
 
   if (article.author.id !== req.user.id)
-    return res.status(FORBIDDEN).json({
-      statusCode: FORBIDDEN,
+    return res.status(StatusCodes.FORBIDDEN).json({
+      statusCode: StatusCodes.FORBIDDEN,
       message: 'You are not the author',
     });
 
@@ -62,18 +57,18 @@ const removeArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    return res.status(NOT_FOUND).json({
-      statusCode: NOT_FOUND,
+    return res.status(StatusCodes.NOT_FOUND).json({
+      statusCode: StatusCodes.NOT_FOUND,
       message: `Not found any article with slug: ${req.query.slug}`,
     });
 
   if (article.author.id !== req.user.id)
-    return res.status(FORBIDDEN).json({
-      statusCode: FORBIDDEN,
+    return res.status(StatusCodes.FORBIDDEN).json({
+      statusCode: StatusCodes.FORBIDDEN,
       message: 'You are not the author',
     });
 
-  return res.status(NO_CONTENT).json(await article.remove());
+  return res.status(StatusCodes.NO_CONTENT).json(await article.remove());
 };
 const patchArticleHandler: NextHttpHandler = async (req, res) => {
   const article = await Article.findOne({
@@ -81,14 +76,14 @@ const patchArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    return res.status(NOT_FOUND).json({
-      statusCode: NOT_FOUND,
+    return res.status(StatusCodes.NOT_FOUND).json({
+      statusCode: StatusCodes.NOT_FOUND,
       message: `Not found any article with slug: ${req.query.slug}`,
     });
 
   if (article.author.id !== req.user.id)
-    return res.status(FORBIDDEN).json({
-      statusCode: FORBIDDEN,
+    return res.status(StatusCodes.FORBIDDEN).json({
+      statusCode: StatusCodes.FORBIDDEN,
       message: 'You are not the author',
     });
 
@@ -119,8 +114,8 @@ export default validateMethod(
     } catch (error) {
       log.error(`[${req.method}] ${req.url}`, error);
 
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        statusCode: INTERNAL_SERVER_ERROR,
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         message: error.message,
       });
     }

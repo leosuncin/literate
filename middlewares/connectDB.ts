@@ -1,4 +1,4 @@
-import { SERVICE_UNAVAILABLE } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import log from 'ololog';
 import { NextHttpHandler } from 'types';
 import { connect } from 'utils/db';
@@ -12,8 +12,8 @@ export function connectDB(handler: NextHttpHandler): NextHttpHandler {
     } catch (error) {
       log.error(`[${req.method}] ${req.url}`, error);
 
-      return res.status(SERVICE_UNAVAILABLE).send({
-        statusCode: SERVICE_UNAVAILABLE,
+      return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
         message: 'Database connection error',
       });
     }

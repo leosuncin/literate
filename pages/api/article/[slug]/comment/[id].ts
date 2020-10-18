@@ -1,9 +1,4 @@
-import {
-  FORBIDDEN,
-  INTERNAL_SERVER_ERROR,
-  NO_CONTENT,
-  NOT_FOUND,
-} from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import {
   connectDB,
   validateBody,
@@ -19,8 +14,8 @@ const showCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = await Comment.findById(req.query.id).populate('author');
 
   if (!comment)
-    return res.status(NOT_FOUND).json({
-      statusCode: NOT_FOUND,
+    return res.status(StatusCodes.NOT_FOUND).json({
+      statusCode: StatusCodes.NOT_FOUND,
       message: `Not found any comment with id: ${req.query.id}`,
     });
 
@@ -30,14 +25,14 @@ const editCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = await Comment.findById(req.query.id).populate('author');
 
   if (!comment)
-    return res.status(NOT_FOUND).json({
-      statusCode: NOT_FOUND,
+    return res.status(StatusCodes.NOT_FOUND).json({
+      statusCode: StatusCodes.NOT_FOUND,
       message: `Not found any comment with id: ${req.query.id}`,
     });
 
   if (comment.author.id !== req.user.id)
-    return res.status(FORBIDDEN).json({
-      statusCode: FORBIDDEN,
+    return res.status(StatusCodes.FORBIDDEN).json({
+      statusCode: StatusCodes.FORBIDDEN,
       message: 'You are not the author',
     });
 
@@ -52,14 +47,14 @@ const removeCommentHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    return res.status(NOT_FOUND).json({
-      statusCode: NOT_FOUND,
+    return res.status(StatusCodes.NOT_FOUND).json({
+      statusCode: StatusCodes.NOT_FOUND,
       message: `Not found any article with slug: ${req.query.slug}`,
     });
 
   if (!comment)
-    return res.status(NOT_FOUND).json({
-      statusCode: NOT_FOUND,
+    return res.status(StatusCodes.NOT_FOUND).json({
+      statusCode: StatusCodes.NOT_FOUND,
       message: `Not found any comment with id: ${req.query.id}`,
     });
 
@@ -67,12 +62,12 @@ const removeCommentHandler: NextHttpHandler = async (req, res) => {
     req.user.id === article.author.id || req.user.id === comment.author.id;
 
   if (!hasAuthorization)
-    return res.status(FORBIDDEN).json({
-      statusCode: FORBIDDEN,
+    return res.status(StatusCodes.FORBIDDEN).json({
+      statusCode: StatusCodes.FORBIDDEN,
       message: 'You are not the author of the article or comment',
     });
 
-  return res.status(NO_CONTENT).json(await article.remove());
+  return res.status(StatusCodes.NO_CONTENT).json(await article.remove());
 };
 
 export default validateMethod(
@@ -92,8 +87,8 @@ export default validateMethod(
     } catch (error) {
       log.error(`[${req.method}] ${req.url}`);
 
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        statusCode: INTERNAL_SERVER_ERROR,
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         message: error.message,
       });
     }

@@ -1,9 +1,4 @@
-import {
-  BAD_REQUEST,
-  CREATED,
-  getStatusText,
-  INTERNAL_SERVER_ERROR,
-} from 'http-status-codes';
+import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import {
   connectDB,
   validateBody,
@@ -20,7 +15,7 @@ const createArticleHandler: NextHttpHandler = async (req, res) => {
   article.author = req.user;
   await article.save();
 
-  return res.status(CREATED).json(article.toJSON());
+  return res.status(StatusCodes.CREATED).json(article.toJSON());
 };
 const findArticleHandler: NextHttpHandler = async (req, res) => {
   try {
@@ -32,9 +27,9 @@ const findArticleHandler: NextHttpHandler = async (req, res) => {
 
     return res.json(articles);
   } catch (error) {
-    return res.status(BAD_REQUEST).json({
-      statusCode: BAD_REQUEST,
-      message: getStatusText(BAD_REQUEST),
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: getReasonPhrase(StatusCodes.BAD_REQUEST),
       errors: error.errors,
     });
   }
@@ -55,8 +50,8 @@ export default validateMethod(
     } catch (error) {
       log.error(`[${req.method}] ${req.url}`, error);
 
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        statusCode: INTERNAL_SERVER_ERROR,
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         message: error.message,
       });
     }

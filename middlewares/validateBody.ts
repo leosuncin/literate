@@ -1,4 +1,4 @@
-import { getStatusText, UNPROCESSABLE_ENTITY } from 'http-status-codes';
+import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { NextHttpHandler } from 'types';
 import { ObjectSchema } from 'yup';
 
@@ -11,9 +11,9 @@ export function validateBody(
       req.body = await schema.validate(req.body, { abortEarly: false });
       return handler(req, res);
     } catch (error) {
-      return res.status(UNPROCESSABLE_ENTITY).json({
-        statusCode: UNPROCESSABLE_ENTITY,
-        message: getStatusText(UNPROCESSABLE_ENTITY),
+      return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        message: getReasonPhrase(StatusCodes.UNPROCESSABLE_ENTITY),
         errors: error.errors,
       });
     }

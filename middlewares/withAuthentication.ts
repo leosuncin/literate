@@ -1,4 +1,4 @@
-import { FORBIDDEN, UNAUTHORIZED } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import { User } from 'models';
 import { NextHttpHandler } from 'types';
 import { decodeJWT } from 'utils/jwt';
@@ -6,16 +6,16 @@ import { decodeJWT } from 'utils/jwt';
 export function withAuthentication(handler: NextHttpHandler): NextHttpHandler {
   return async (req, res) => {
     if (typeof req.headers.authorization !== 'string')
-      return res.status(UNAUTHORIZED).json({
-        statusCode: UNAUTHORIZED,
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Missing authorization header',
       });
 
     const [, token] = req.headers.authorization.split(' ');
 
     if (!token)
-      return res.status(UNAUTHORIZED).json({
-        statusCode: UNAUTHORIZED,
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Missing authorization token',
       });
 
@@ -23,8 +23,8 @@ export function withAuthentication(handler: NextHttpHandler): NextHttpHandler {
     try {
       payload = decodeJWT(token);
     } catch (error) {
-      return res.status(FORBIDDEN).json({
-        statusCode: FORBIDDEN,
+      return res.status(StatusCodes.FORBIDDEN).json({
+        statusCode: StatusCodes.FORBIDDEN,
         message: 'Invalid authorization token',
       });
     }
@@ -32,8 +32,8 @@ export function withAuthentication(handler: NextHttpHandler): NextHttpHandler {
     const user = await User.findById(payload.id);
 
     if (!user)
-      return res.status(FORBIDDEN).json({
-        statusCode: FORBIDDEN,
+      return res.status(StatusCodes.FORBIDDEN).json({
+        statusCode: StatusCodes.FORBIDDEN,
         message: 'Invalid user from token',
       });
 

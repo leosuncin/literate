@@ -1,4 +1,4 @@
-import { CONFLICT, CREATED, INTERNAL_SERVER_ERROR } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import { connectDB, validateBody, validateMethod } from 'middlewares';
 import { User } from 'models';
 import log from 'ololog';
@@ -12,18 +12,18 @@ const registerHandle: NextHttpHandler = async (req, res) => {
     const token = signJWT(user);
     res.setHeader('Authorization', `Bearer ${token}`);
 
-    return res.status(CREATED).json(user.toJSON());
+    return res.status(StatusCodes.CREATED).json(user.toJSON());
   } catch (error) {
     if (error.name === 'ValidationError' && 'errors' in error)
-      return res.status(CONFLICT).json({
-        statusCode: CONFLICT,
+      return res.status(StatusCodes.CONFLICT).json({
+        statusCode: StatusCodes.CONFLICT,
         message: `Email ${error.errors.email?.message}`,
       });
     else {
       log.error(`[${req.method}] ${req.url}`, error);
 
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        statusCode: INTERNAL_SERVER_ERROR,
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         message: error.message,
       });
     }
