@@ -1,5 +1,11 @@
+import { validate } from '@cypress/schema-tools';
 import faker from 'faker';
 import { StatusCodes } from 'http-status-codes';
+
+import { formats, schemas } from '../../../schemas';
+
+const validateErrorSchema = validate(schemas)('ApiError', '1.0.0');
+const validateUserSchema = validate(schemas, formats)('User', '1.0.0');
 
 describe('Register API', () => {
   const url = '/api/auth/register';
@@ -13,9 +19,10 @@ describe('Register API', () => {
         email: faker.internet.exampleEmail(),
         password: faker.internet.password(8, true),
       },
-    })
-      .its('status')
-      .should('equal', StatusCodes.CREATED);
+    }).then(({ status, body }) => {
+      expect(status).to.equal(StatusCodes.CREATED);
+      expect(validateUserSchema(body)).to.equal(true);
+    });
   });
 
   it('should fail to register a duplicate user', () => {
@@ -30,8 +37,7 @@ describe('Register API', () => {
       failOnStatusCode: false,
     }).then(({ status, body }) => {
       expect(status).to.equal(StatusCodes.CONFLICT);
-      expect(body).to.have.keys(['message', 'statusCode']);
-      expect(body.message).to.equal('Email is already taken');
+      expect(validateErrorSchema(body)).to.equal(true);
     });
   });
 
@@ -47,13 +53,14 @@ describe('Register API', () => {
       failOnStatusCode: false,
     }).then(({ status, body }) => {
       expect(status).to.equal(StatusCodes.UNPROCESSABLE_ENTITY);
-      expect(body).to.have.keys(['message', 'statusCode', 'errors']);
+      expect(validateErrorSchema(body)).to.equal(true);
     });
   });
 
   it('should validate the request method', () => {
-    cy.api({ url, failOnStatusCode: false })
-      .its('status')
-      .should('equal', StatusCodes.METHOD_NOT_ALLOWED);
+    cy.api({ url, failOnStatusCode: false }).then(({ status, body }) => {
+      expect(status).to.equal(StatusCodes.METHOD_NOT_ALLOWED);
+      expect(validateErrorSchema(body)).to.equal(true);
+    });
   });
 });
