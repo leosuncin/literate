@@ -12,6 +12,8 @@
 // the project's config changing)
 const wp = require('@cypress/webpack-preprocessor');
 
+import jwtTask from './jwt-task';
+
 const options = {
   webpackOptions: {
     resolve: {
@@ -32,8 +34,13 @@ const options = {
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+  require('cypress-dotenv')(config, {}, true);
   on('file:preprocessor', wp(options));
   require('@cypress/code-coverage/task')(on, config);
+  on(
+    'task',
+    jwtTask(process.env.APP_SECRET, { expiresIn: '1 min', algorithm: 'HS384' }),
+  );
 
   return config;
 };
