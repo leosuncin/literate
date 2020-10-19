@@ -84,8 +84,12 @@ UserSchema.pre<Query<User>>('findOneAndUpdate', function (next) {
   return next();
 });
 
-if (process.env.NODE_ENV !== 'production' && 'User' in mongoose.models) {
-  delete mongoose.models.User;
+/* istanbul ignore if */
+if (
+  process.env.NODE_ENV !== 'production' &&
+  mongoose.modelNames().includes('User')
+) {
+  mongoose.deleteModel('User');
 }
 
 export const User = mongoose.model<User>('User', UserSchema);

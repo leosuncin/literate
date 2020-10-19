@@ -75,8 +75,12 @@ ArticleSchema.methods.toJSON = function (this: Article) {
   return article;
 };
 
-if (process.env.NODE_ENV !== 'production' && 'Article' in mongoose.models) {
-  delete mongoose.models.Article;
+/* istanbul ignore if */
+if (
+  process.env.NODE_ENV !== 'production' &&
+  mongoose.modelNames().includes('Article')
+) {
+  mongoose.deleteModel('Article');
 }
 
 export const Article = mongoose.model<Article>('Article', ArticleSchema);

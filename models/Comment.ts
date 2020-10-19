@@ -41,8 +41,12 @@ CommentSchema.methods.toJSON = function (this: Comment) {
   return comment;
 };
 
-if (process.env.NODE_ENV !== 'production' && 'Comment' in mongoose.models) {
-  delete mongoose.models.Comment;
+/* istanbul ignore if */
+if (
+  process.env.NODE_ENV !== 'production' &&
+  mongoose.modelNames().includes('Comment')
+) {
+  mongoose.deleteModel('Comment');
 }
 
 export const Comment = mongoose.model<Comment>('Comment', CommentSchema);
