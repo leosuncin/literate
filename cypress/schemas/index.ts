@@ -1,6 +1,7 @@
 import { combineSchemas, CustomFormat, detectors } from '@cypress/schema-tools';
 
 import apiErrorSchema from './apiError.schema';
+import articleSchema from './article.schema';
 import userSchema from './user.schema';
 
 const datetime: CustomFormat = {
@@ -10,6 +11,17 @@ const datetime: CustomFormat = {
   example: new Date().toISOString(),
 };
 
-export const schemas = combineSchemas(apiErrorSchema, userSchema);
+const slug: CustomFormat = {
+  name: 'slug',
+  description: 'Date time ISO format',
+  detect: /[a-z0-9]+-?/,
+  example: 'lorem-ipsum-dolorem',
+};
 
-export const formats = detectors({ datetime });
+export const schemas = combineSchemas(
+  apiErrorSchema,
+  userSchema,
+  articleSchema,
+);
+
+export const formats = detectors({ datetime, slug });

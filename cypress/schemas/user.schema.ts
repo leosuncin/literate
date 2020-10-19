@@ -1,6 +1,6 @@
 import { ObjectSchema, versionSchemas } from '@cypress/schema-tools';
 
-const user100: ObjectSchema = {
+export const user100: ObjectSchema = {
   version: {
     major: 1,
     minor: 0,
