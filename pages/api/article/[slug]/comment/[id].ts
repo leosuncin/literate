@@ -41,10 +41,10 @@ const editCommentHandler: NextHttpHandler = async (req, res) => {
   return res.json(await comment.save());
 };
 const removeCommentHandler: NextHttpHandler = async (req, res) => {
-  const comment = await Comment.findById(req.query.id).populate('author');
+  const comment = await Comment.findById(req.query.id);
   const article = await Article.findOne({
     slug: req.query.slug as string,
-  }).populate('author');
+  });
 
   if (!article)
     return res.status(StatusCodes.NOT_FOUND).json({
@@ -59,7 +59,8 @@ const removeCommentHandler: NextHttpHandler = async (req, res) => {
     });
 
   const hasAuthorization =
-    req.user.id === article.author.id || req.user.id === comment.author.id;
+    req.user.id === article.author.toString() ||
+    req.user.id === comment.author.toString();
 
   if (!hasAuthorization)
     return res.status(StatusCodes.FORBIDDEN).json({
@@ -67,7 +68,9 @@ const removeCommentHandler: NextHttpHandler = async (req, res) => {
       message: 'You are not the author of the article or comment',
     });
 
-  return res.status(StatusCodes.NO_CONTENT).json(await article.remove());
+  await comment.remove();
+
+  return res.status(StatusCodes.NO_CONTENT).json(null);
 };
 
 export default validateMethod(
