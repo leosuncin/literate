@@ -1,9 +1,11 @@
 tasks:
-  - before: |
+  - init: mkdir -p /workspace/data
+    command: mongod --quiet --dbpath /workspace/data
+  - before: rm -rf .next
+    init: |
+      npm ci
+      npm run fixtures:load
       cp .env.example .env
-      mkdir -p /workspace/data
-    init: npm ci
-    command: mongod --shutdown --quiet --dbpath /workspace/data
     command: npm run dev
 
 image:
