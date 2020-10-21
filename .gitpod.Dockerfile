@@ -1,26 +1,23 @@
-FROM gitpod/workspace-mongodb
+FROM gitpod/workspace-mongodb:latest
 
 USER root
 
 # Install Cypress-base dependencies
-RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get update &&\
+    apt-get install -yq --no-install-recommends \
     libgtk2.0-0 \
-    libgtk-3-0
-RUN apt-get install -yq \
+    libgtk-3-0 \
     libgbm-dev \
-    libnotify-dev
-RUN apt-get install -y \
+    libnotify-dev \
     libgconf-2-4 \
     libnss3 \
-    libxss1
-RUN apt-get install -y \
+    libxss1 \
     libasound2 \
     libxtst6 \
     xauth \
-    xvfb
-RUN apt-get clean &&\
-	rm -rf /var/lib/apt/lists/*
+    xvfb &&\
+    apt-get clean &&\
+	  rm -rf /var/lib/apt/lists/*
 
 RUN pip install httpie
 
