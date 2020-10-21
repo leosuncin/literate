@@ -16,6 +16,9 @@ jobs:
         target: .gitpod.Dockerfile 
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: wemake-services/dotenv-linter@master
+      with:
+        options: .env.example
 
   tsc:
     runs-on: ubuntu-latest
