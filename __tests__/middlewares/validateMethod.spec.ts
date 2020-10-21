@@ -1,6 +1,7 @@
 import { validateMethod } from 'middlewares/validateMethod';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
+import { MethodNotAllowedError } from 'types';
 
 describe('validateMethod', () => {
   it('should validate a single string', () => {
@@ -9,7 +10,9 @@ describe('validateMethod', () => {
     });
     const handler = jest.fn();
 
-    expect(validateMethod('GET', handler).bind(null, req, res)).toThrow();
+    expect(validateMethod('GET', handler).bind(null, req, res)).toThrow(
+      MethodNotAllowedError,
+    );
 
     expect(handler).not.toHaveBeenCalled();
   });
@@ -22,7 +25,7 @@ describe('validateMethod', () => {
 
     expect(
       validateMethod(['POST', 'PUT'], handler).bind(null, req, res),
-    ).toThrow();
+    ).toThrow(MethodNotAllowedError);
 
     expect(handler).not.toHaveBeenCalled();
   });

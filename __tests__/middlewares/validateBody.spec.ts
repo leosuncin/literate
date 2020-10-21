@@ -2,6 +2,7 @@ import faker from 'faker';
 import { validateBody } from 'middlewares/validateBody';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
+import { UnprocessableEntityError } from 'types';
 import * as yup from 'yup';
 
 describe('validateBody', () => {
@@ -17,7 +18,7 @@ describe('validateBody', () => {
 
     await expect(
       validateBody(schema, handler)(req as any, res),
-    ).rejects.toThrow();
+    ).rejects.toThrow(UnprocessableEntityError);
 
     expect(handler).not.toHaveBeenCalled();
   });

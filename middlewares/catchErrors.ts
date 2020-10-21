@@ -2,10 +2,12 @@ import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import MongooseCastError from 'mongoose/lib/error/cast';
 import MongooseValidationError from 'mongoose/lib/error/validation';
 import log from 'ololog';
-import { HttpError, NextHttpHandler } from 'types';
+import { ErrorResponse, HttpApiError, NextHttpHandler } from 'types';
 import { ValidationError } from 'yup';
 
-export function catchErrors(handler: NextHttpHandler): NextHttpHandler {
+export function catchErrors(
+  handler: NextHttpHandler,
+): NextHttpHandler<ErrorResponse> {
   return async (req, res) => {
     try {
       return await handler(req, res);
@@ -17,7 +19,7 @@ export function catchErrors(handler: NextHttpHandler): NextHttpHandler {
         log.error(error);
       }
 
-      if (error instanceof HttpError) {
+      if (error instanceof HttpApiError) {
         const { message, statusCode, context } = error;
 
         return res.status(statusCode).json({

@@ -1,5 +1,4 @@
-import { StatusCodes } from 'http-status-codes';
-import { HttpError, NextHttpHandler } from 'types';
+import { MethodNotAllowedError, NextHttpHandler } from 'types';
 
 export function validateMethod(
   methods: string | string[],
@@ -9,10 +8,7 @@ export function validateMethod(
 
   return (req, res) => {
     if (!methods.includes(req.method))
-      throw new HttpError(
-        `Allowed method(s): ${(methods as string[]).join(', ')}`,
-        StatusCodes.METHOD_NOT_ALLOWED,
-      );
+      throw new MethodNotAllowedError(methods as string[]);
     else return handler(req, res);
   };
 }

@@ -8,7 +8,7 @@ import {
 } from 'middlewares';
 import { Article, Comment } from 'models';
 import { CommentSchema, Pagination } from 'schemas';
-import { HttpError, NextHttpHandler } from 'types';
+import { NextHttpHandler, NotFoundError } from 'types';
 
 const createCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = new Comment(req.body);
@@ -17,9 +17,8 @@ const createCommentHandler: NextHttpHandler = async (req, res) => {
   comment.author = req.user;
 
   if (!article)
-    throw new HttpError(
+    throw new NotFoundError(
       `Not found any article with slug: ${req.query.slug}`,
-      StatusCodes.NOT_FOUND,
     );
 
   await comment.save();
@@ -36,9 +35,8 @@ const listCommentHandler: NextHttpHandler = async (req, res) => {
     .skip(size * (page - 1));
 
   if (!article)
-    throw new HttpError(
+    throw new NotFoundError(
       `Not found any article with slug: ${req.query.slug}`,
-      StatusCodes.NOT_FOUND,
     );
 
   return res.json(comments);

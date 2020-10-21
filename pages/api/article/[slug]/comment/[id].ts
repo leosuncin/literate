@@ -8,16 +8,13 @@ import {
 } from 'middlewares';
 import { Article, Comment } from 'models';
 import { CommentSchema } from 'schemas';
-import { HttpError, NextHttpHandler } from 'types';
+import { ForbiddenError, NextHttpHandler, NotFoundError } from 'types';
 
 const showCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = await Comment.findById(req.query.id).populate('author');
 
   if (!comment)
-    throw new HttpError(
-      `Not found any comment with id: ${req.query.id}`,
-      StatusCodes.NOT_FOUND,
-    );
+    throw new NotFoundError(`Not found any comment with id: ${req.query.id}`);
 
   return res.json(comment.toJSON());
 };
@@ -26,13 +23,10 @@ const editCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = await Comment.findById(req.query.id).populate('author');
 
   if (!comment)
-    throw new HttpError(
-      `Not found any comment with id: ${req.query.id}`,
-      StatusCodes.NOT_FOUND,
-    );
+    throw new NotFoundError(`Not found any comment with id: ${req.query.id}`);
 
   if (comment.author.id !== req.user.id)
-    throw new HttpError('You are not the author', StatusCodes.FORBIDDEN);
+    throw new ForbiddenError('You are not the author');
 
   comment.body = req.body.body;
 
@@ -46,25 +40,20 @@ const removeCommentHandler: NextHttpHandler = async (req, res) => {
   });
 
   if (!article)
-    throw new HttpError(
+    throw new NotFoundError(
       `Not found any article with slug: ${req.query.slug}`,
-      StatusCodes.NOT_FOUND,
     );
 
   if (!comment)
-    throw new HttpError(
-      `Not found any comment with id: ${req.query.id}`,
-      StatusCodes.NOT_FOUND,
-    );
+    throw new NotFoundError(`Not found any comment with id: ${req.query.id}`);
 
   const hasAuthorization =
     req.user.id === article.author.toString() ||
     req.user.id === comment.author.toString();
 
   if (!hasAuthorization)
-    throw new HttpError(
+    throw new ForbiddenError(
       'You are not the author of the article or comment',
-      StatusCodes.FORBIDDEN,
     );
 
   await comment.remove();

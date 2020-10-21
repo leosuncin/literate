@@ -1,5 +1,4 @@
-import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import { HttpError, NextHttpHandler } from 'types';
+import { NextHttpHandler, UnprocessableEntityError } from 'types';
 import { ObjectSchema } from 'yup';
 
 export function validateBody(
@@ -12,11 +11,7 @@ export function validateBody(
 
       return handler(req, res);
     } catch (error) {
-      throw new HttpError(
-        getReasonPhrase(StatusCodes.UNPROCESSABLE_ENTITY),
-        StatusCodes.UNPROCESSABLE_ENTITY,
-        error.errors,
-      );
+      throw new UnprocessableEntityError('Validation errors', error.errors);
     }
   };
 }

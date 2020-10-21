@@ -4,6 +4,7 @@ import type { User } from 'models';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
+import { ForbiddenError, UnauthorizedError } from 'types';
 import * as db from 'utils/db';
 import { signJWT } from 'utils/jwt';
 
@@ -27,9 +28,9 @@ describe('withAuthentication', () => {
     const handler = jest.fn();
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>();
 
-    await expect(
-      withAuthentication(handler)(req as any, res),
-    ).rejects.toThrow();
+    await expect(withAuthentication(handler)(req as any, res)).rejects.toThrow(
+      UnauthorizedError,
+    );
 
     expect(handler).not.toHaveBeenCalled();
   });
@@ -42,9 +43,9 @@ describe('withAuthentication', () => {
       },
     });
 
-    await expect(
-      withAuthentication(handler)(req as any, res),
-    ).rejects.toThrow();
+    await expect(withAuthentication(handler)(req as any, res)).rejects.toThrow(
+      UnauthorizedError,
+    );
 
     expect(handler).not.toHaveBeenCalled();
   });
@@ -59,9 +60,9 @@ describe('withAuthentication', () => {
       },
     });
 
-    await expect(
-      withAuthentication(handler)(req as any, res),
-    ).rejects.toThrow();
+    await expect(withAuthentication(handler)(req as any, res)).rejects.toThrow(
+      ForbiddenError,
+    );
 
     expect(handler).not.toHaveBeenCalled();
   });
@@ -78,9 +79,9 @@ describe('withAuthentication', () => {
       },
     });
 
-    await expect(
-      withAuthentication(handler)(req as any, res),
-    ).rejects.toThrow();
+    await expect(withAuthentication(handler)(req as any, res)).rejects.toThrow(
+      ForbiddenError,
+    );
 
     expect(handler).not.toHaveBeenCalled();
   });

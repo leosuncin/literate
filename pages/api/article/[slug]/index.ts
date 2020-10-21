@@ -8,7 +8,7 @@ import {
 } from 'middlewares';
 import { Article } from 'models';
 import { ArticlePatch, ArticleUpdate } from 'schemas';
-import { HttpError, NextHttpHandler } from 'types';
+import { ForbiddenError, NextHttpHandler, NotFoundError } from 'types';
 
 const showArticleHandler: NextHttpHandler = async (req, res) => {
   const article = await Article.findOne({
@@ -16,9 +16,8 @@ const showArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    throw new HttpError(
+    throw new NotFoundError(
       `Not found any article with slug: ${req.query.slug}`,
-      StatusCodes.NOT_FOUND,
     );
 
   return res.json(article.toJSON());
@@ -29,13 +28,12 @@ const editArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    throw new HttpError(
+    throw new NotFoundError(
       `Not found any article with slug: ${req.query.slug}`,
-      StatusCodes.NOT_FOUND,
     );
 
   if (article.author.id !== req.user.id)
-    throw new HttpError('You are not the author', StatusCodes.FORBIDDEN);
+    throw new ForbiddenError('You are not the author');
 
   for (const property in req.body) {
     article[property] = req.body[property];
@@ -55,13 +53,12 @@ const removeArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    throw new HttpError(
+    throw new NotFoundError(
       `Not found any article with slug: ${req.query.slug}`,
-      StatusCodes.NOT_FOUND,
     );
 
   if (article.author.id !== req.user.id)
-    throw new HttpError('You are not the author', StatusCodes.FORBIDDEN);
+    throw new ForbiddenError('You are not the author');
 
   await article.remove();
 
@@ -74,13 +71,12 @@ const patchArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    throw new HttpError(
+    throw new NotFoundError(
       `Not found any article with slug: ${req.query.slug}`,
-      StatusCodes.NOT_FOUND,
     );
 
   if (article.author.id !== req.user.id)
-    throw new HttpError('You are not the author', StatusCodes.FORBIDDEN);
+    throw new ForbiddenError('You are not the author');
 
   article.draft = req.body.draft;
   await article.save();
