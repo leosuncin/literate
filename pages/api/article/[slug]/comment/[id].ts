@@ -1,45 +1,44 @@
 import { StatusCodes } from 'http-status-codes';
 import {
+  catchErrors,
   connectDB,
   validateBody,
   validateMethod,
   withAuthentication,
 } from 'middlewares';
 import { Article, Comment } from 'models';
-import log from 'ololog';
 import { CommentSchema } from 'schemas';
-import { NextHttpHandler } from 'types';
+import { HttpError, NextHttpHandler } from 'types';
 
 const showCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = await Comment.findById(req.query.id).populate('author');
 
   if (!comment)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any comment with id: ${req.query.id}`,
-    });
+    throw new HttpError(
+      `Not found any comment with id: ${req.query.id}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   return res.json(comment.toJSON());
 };
+
 const editCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = await Comment.findById(req.query.id).populate('author');
 
   if (!comment)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any comment with id: ${req.query.id}`,
-    });
+    throw new HttpError(
+      `Not found any comment with id: ${req.query.id}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   if (comment.author.id !== req.user.id)
-    return res.status(StatusCodes.FORBIDDEN).json({
-      statusCode: StatusCodes.FORBIDDEN,
-      message: 'You are not the author',
-    });
+    throw new HttpError('You are not the author', StatusCodes.FORBIDDEN);
 
   comment.body = req.body.body;
 
   return res.json(await comment.save());
 };
+
 const removeCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = await Comment.findById(req.query.id);
   const article = await Article.findOne({
@@ -47,36 +46,36 @@ const removeCommentHandler: NextHttpHandler = async (req, res) => {
   });
 
   if (!article)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any article with slug: ${req.query.slug}`,
-    });
+    throw new HttpError(
+      `Not found any article with slug: ${req.query.slug}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   if (!comment)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any comment with id: ${req.query.id}`,
-    });
+    throw new HttpError(
+      `Not found any comment with id: ${req.query.id}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   const hasAuthorization =
     req.user.id === article.author.toString() ||
     req.user.id === comment.author.toString();
 
   if (!hasAuthorization)
-    return res.status(StatusCodes.FORBIDDEN).json({
-      statusCode: StatusCodes.FORBIDDEN,
-      message: 'You are not the author of the article or comment',
-    });
+    throw new HttpError(
+      'You are not the author of the article or comment',
+      StatusCodes.FORBIDDEN,
+    );
 
   await comment.remove();
 
   return res.status(StatusCodes.NO_CONTENT).json(null);
 };
 
-export default validateMethod(
-  ['GET', 'PUT', 'DELETE'],
-  connectDB((req, res) => {
-    try {
+export default catchErrors(
+  validateMethod(
+    ['GET', 'PUT', 'DELETE'],
+    connectDB((req, res) => {
       switch (req.method) {
         case 'GET':
           return showCommentHandler(req, res);
@@ -87,13 +86,6 @@ export default validateMethod(
         case 'DELETE':
           return withAuthentication(removeCommentHandler)(req, res);
       }
-    } catch (error) {
-      log.error(`[${req.method}] ${req.url}`);
-
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        message: error.message,
-      });
-    }
-  }),
+    }),
+  ),
 );

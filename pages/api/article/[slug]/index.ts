@@ -1,14 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
 import {
+  catchErrors,
   connectDB,
   validateBody,
   validateMethod,
   withAuthentication,
 } from 'middlewares';
 import { Article } from 'models';
-import log from 'ololog';
 import { ArticlePatch, ArticleUpdate } from 'schemas';
-import { NextHttpHandler } from 'types';
+import { HttpError, NextHttpHandler } from 'types';
 
 const showArticleHandler: NextHttpHandler = async (req, res) => {
   const article = await Article.findOne({
@@ -16,10 +16,10 @@ const showArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any article with slug: ${req.query.slug}`,
-    });
+    throw new HttpError(
+      `Not found any article with slug: ${req.query.slug}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   return res.json(article.toJSON());
 };
@@ -29,16 +29,13 @@ const editArticleHandler: NextHttpHandler = async (req, res) => {
   }).populate('author');
 
   if (!article)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any article with slug: ${req.query.slug}`,
-    });
+    throw new HttpError(
+      `Not found any article with slug: ${req.query.slug}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   if (article.author.id !== req.user.id)
-    return res.status(StatusCodes.FORBIDDEN).json({
-      statusCode: StatusCodes.FORBIDDEN,
-      message: 'You are not the author',
-    });
+    throw new HttpError('You are not the author', StatusCodes.FORBIDDEN);
 
   for (const property in req.body) {
     article[property] = req.body[property];
@@ -51,41 +48,39 @@ const editArticleHandler: NextHttpHandler = async (req, res) => {
 
   return res.json(article.toJSON());
 };
+
 const removeArticleHandler: NextHttpHandler = async (req, res) => {
   const article = await Article.findOne({
     slug: req.query.slug as string,
   }).populate('author');
 
   if (!article)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any article with slug: ${req.query.slug}`,
-    });
+    throw new HttpError(
+      `Not found any article with slug: ${req.query.slug}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   if (article.author.id !== req.user.id)
-    return res.status(StatusCodes.FORBIDDEN).json({
-      statusCode: StatusCodes.FORBIDDEN,
-      message: 'You are not the author',
-    });
+    throw new HttpError('You are not the author', StatusCodes.FORBIDDEN);
 
-  return res.status(StatusCodes.NO_CONTENT).json(await article.remove());
+  await article.remove();
+
+  return res.status(StatusCodes.NO_CONTENT).json(null);
 };
+
 const patchArticleHandler: NextHttpHandler = async (req, res) => {
   const article = await Article.findOne({
     slug: req.query.slug as string,
   }).populate('author');
 
   if (!article)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any article with slug: ${req.query.slug}`,
-    });
+    throw new HttpError(
+      `Not found any article with slug: ${req.query.slug}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   if (article.author.id !== req.user.id)
-    return res.status(StatusCodes.FORBIDDEN).json({
-      statusCode: StatusCodes.FORBIDDEN,
-      message: 'You are not the author',
-    });
+    throw new HttpError('You are not the author', StatusCodes.FORBIDDEN);
 
   article.draft = req.body.draft;
   await article.save();
@@ -93,10 +88,10 @@ const patchArticleHandler: NextHttpHandler = async (req, res) => {
   return res.json({ draft: article.draft });
 };
 
-export default validateMethod(
-  ['GET', 'PUT', 'DELETE', 'PATCH'],
-  connectDB((req, res) => {
-    try {
+export default catchErrors(
+  validateMethod(
+    ['GET', 'PUT', 'DELETE', 'PATCH'],
+    connectDB((req, res) => {
       switch (req.method) {
         case 'GET':
           return showArticleHandler(req, res);
@@ -111,13 +106,6 @@ export default validateMethod(
             validateBody(ArticlePatch, patchArticleHandler),
           )(req, res);
       }
-    } catch (error) {
-      log.error(`[${req.method}] ${req.url}`, error);
-
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        message: error.message,
-      });
-    }
-  }),
+    }),
+  ),
 );

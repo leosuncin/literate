@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import log from 'ololog';
-import { NextHttpHandler } from 'types';
+import { HttpError, NextHttpHandler } from 'types';
 import { connect } from 'utils/db';
 
 export function connectDB(handler: NextHttpHandler): NextHttpHandler {
@@ -10,12 +9,11 @@ export function connectDB(handler: NextHttpHandler): NextHttpHandler {
 
       return handler(req, res);
     } catch (error) {
-      log.error(`[${req.method}] ${req.url}`, error);
-
-      return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
-        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
-        message: 'Database connection error',
-      });
+      throw new HttpError(
+        'Database connection error',
+        StatusCodes.SERVICE_UNAVAILABLE,
+        error,
+      );
     }
   };
 }

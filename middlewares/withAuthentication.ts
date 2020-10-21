@@ -1,41 +1,39 @@
 import { StatusCodes } from 'http-status-codes';
 import { User } from 'models';
-import { NextHttpHandler } from 'types';
+import { HttpError, NextHttpHandler } from 'types';
 import { decodeJWT } from 'utils/jwt';
 
 export function withAuthentication(handler: NextHttpHandler): NextHttpHandler {
   return async (req, res) => {
     if (typeof req.headers.authorization !== 'string')
-      return res.status(StatusCodes.UNAUTHORIZED).json({
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: 'Missing authorization header',
-      });
+      throw new HttpError(
+        'Missing authorization header',
+        StatusCodes.UNAUTHORIZED,
+      );
 
     const [, token] = req.headers.authorization.split(' ');
 
     if (!token)
-      return res.status(StatusCodes.UNAUTHORIZED).json({
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: 'Missing authorization token',
-      });
+      throw new HttpError(
+        'Missing authorization token',
+        StatusCodes.UNAUTHORIZED,
+      );
 
     let payload;
     try {
       payload = decodeJWT(token);
     } catch (error) {
-      return res.status(StatusCodes.FORBIDDEN).json({
-        statusCode: StatusCodes.FORBIDDEN,
-        message: 'Invalid authorization token',
-      });
+      throw new HttpError(
+        'Invalid authorization token',
+        StatusCodes.FORBIDDEN,
+        error,
+      );
     }
 
     const user = await User.findById(payload.id);
 
     if (!user)
-      return res.status(StatusCodes.FORBIDDEN).json({
-        statusCode: StatusCodes.FORBIDDEN,
-        message: 'Invalid user from token',
-      });
+      throw new HttpError('Invalid user from token', StatusCodes.FORBIDDEN);
 
     req.user = user;
 

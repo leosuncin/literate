@@ -1,14 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
 import {
+  catchErrors,
   connectDB,
   validateBody,
   validateMethod,
   withAuthentication,
 } from 'middlewares';
 import { Article, Comment } from 'models';
-import log from 'ololog';
 import { CommentSchema, Pagination } from 'schemas';
-import { NextHttpHandler } from 'types';
+import { HttpError, NextHttpHandler } from 'types';
 
 const createCommentHandler: NextHttpHandler = async (req, res) => {
   const comment = new Comment(req.body);
@@ -17,10 +17,10 @@ const createCommentHandler: NextHttpHandler = async (req, res) => {
   comment.author = req.user;
 
   if (!article)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any article with slug: ${req.query.slug}`,
-    });
+    throw new HttpError(
+      `Not found any article with slug: ${req.query.slug}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   await comment.save();
 
@@ -36,18 +36,18 @@ const listCommentHandler: NextHttpHandler = async (req, res) => {
     .skip(size * (page - 1));
 
   if (!article)
-    return res.status(StatusCodes.NOT_FOUND).json({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: `Not found any article with slug: ${req.query.slug}`,
-    });
+    throw new HttpError(
+      `Not found any article with slug: ${req.query.slug}`,
+      StatusCodes.NOT_FOUND,
+    );
 
   return res.json(comments);
 };
 
-export default validateMethod(
-  ['GET', 'POST'],
-  connectDB((req, res) => {
-    try {
+export default catchErrors(
+  validateMethod(
+    ['GET', 'POST'],
+    connectDB((req, res) => {
       switch (req.method) {
         case 'POST':
           return withAuthentication(
@@ -56,13 +56,6 @@ export default validateMethod(
         case 'GET':
           return listCommentHandler(req, res);
       }
-    } catch (error) {
-      log.error(`[${req.method}] ${req.url}`, error);
-
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        message: error.message,
-      });
-    }
-  }),
+    }),
+  ),
 );
