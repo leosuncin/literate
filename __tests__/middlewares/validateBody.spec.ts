@@ -1,5 +1,4 @@
 import faker from 'faker';
-import { StatusCodes } from 'http-status-codes';
 import { validateBody } from 'middlewares/validateBody';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -16,9 +15,10 @@ describe('validateBody', () => {
     const handler = jest.fn();
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>();
 
-    await validateBody(schema, handler)(req as any, res);
+    await expect(
+      validateBody(schema, handler)(req as any, res),
+    ).rejects.toThrow();
 
-    expect(res._getStatusCode()).toBe(StatusCodes.UNPROCESSABLE_ENTITY);
     expect(handler).not.toHaveBeenCalled();
   });
 

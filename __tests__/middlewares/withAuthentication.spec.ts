@@ -1,5 +1,4 @@
 import faker from 'faker';
-import { StatusCodes } from 'http-status-codes';
 import { withAuthentication } from 'middlewares/withAuthentication';
 import type { User } from 'models';
 import mongoose from 'mongoose';
@@ -28,9 +27,10 @@ describe('withAuthentication', () => {
     const handler = jest.fn();
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>();
 
-    await withAuthentication(handler)(req as any, res);
+    await expect(
+      withAuthentication(handler)(req as any, res),
+    ).rejects.toThrow();
 
-    expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -42,9 +42,10 @@ describe('withAuthentication', () => {
       },
     });
 
-    await withAuthentication(handler)(req as any, res);
+    await expect(
+      withAuthentication(handler)(req as any, res),
+    ).rejects.toThrow();
 
-    expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -58,9 +59,10 @@ describe('withAuthentication', () => {
       },
     });
 
-    await withAuthentication(handler)(req as any, res);
+    await expect(
+      withAuthentication(handler)(req as any, res),
+    ).rejects.toThrow();
 
-    expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -76,9 +78,10 @@ describe('withAuthentication', () => {
       },
     });
 
-    await withAuthentication(handler)(req as any, res);
+    await expect(
+      withAuthentication(handler)(req as any, res),
+    ).rejects.toThrow();
 
-    expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
     expect(handler).not.toHaveBeenCalled();
   });
 

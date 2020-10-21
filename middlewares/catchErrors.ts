@@ -10,7 +10,12 @@ export function catchErrors(handler: NextHttpHandler): NextHttpHandler {
     try {
       return await handler(req, res);
     } catch (error) {
-      log.error(`[${req.method}] ${req.url}`, error);
+      /* istanbul ignore if */
+      if (process.env.NODE_ENV !== 'test') {
+        // silent log on test environment
+        log.debug(`[${req.method}] ${req.url}`);
+        log.error(error);
+      }
 
       if (error instanceof HttpError) {
         const { message, statusCode, context } = error;

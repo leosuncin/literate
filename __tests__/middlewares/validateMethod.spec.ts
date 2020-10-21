@@ -1,4 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
 import { validateMethod } from 'middlewares/validateMethod';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -10,9 +9,8 @@ describe('validateMethod', () => {
     });
     const handler = jest.fn();
 
-    validateMethod('GET', handler)(req as any, res);
+    expect(validateMethod('GET', handler).bind(null, req, res)).toThrow();
 
-    expect(res._getStatusCode()).toBe(StatusCodes.METHOD_NOT_ALLOWED);
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -22,9 +20,10 @@ describe('validateMethod', () => {
     });
     const handler = jest.fn();
 
-    validateMethod(['POST', 'PUT'], handler)(req as any, res);
+    expect(
+      validateMethod(['POST', 'PUT'], handler).bind(null, req, res),
+    ).toThrow();
 
-    expect(res._getStatusCode()).toBe(StatusCodes.METHOD_NOT_ALLOWED);
     expect(handler).not.toHaveBeenCalled();
   });
 
