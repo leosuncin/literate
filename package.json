@@ -40,7 +40,7 @@
     "mongoose-id-validator": "^0.6.0",
     "mongoose-unique-validator": "^2.0.3",
     "next": "^10.0.1",
-    "ololog": "^1.1.162",
+    "ololog": "^1.1.164",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-hook-form": "^6.10.1",
