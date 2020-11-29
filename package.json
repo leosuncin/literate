@@ -46,7 +46,7 @@
     "react-hook-form": "^6.10.1",
     "swr": "^0.3.8",
     "xstate": "^4.14.0",
-    "yup": "^0.29.3"
+    "yup": "^0.31.0"
   },
   "devDependencies": {
     "@bahmutov/cy-api": "^1.4.2",
