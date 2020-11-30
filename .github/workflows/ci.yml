@@ -34,20 +34,19 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: bahmutov/npm-install@v1
-    - uses: actions/cache@v1
+    - uses: actions/cache@v2
       name: Cache Next.js build
       with:
         path: .next/cache
         key: ${{ runner.os }}-next-build
-        restore-keys: |
-          ${{ runner.os }}-next-build-
+        restore-keys: ${{ runner.os }}-next-build-
     - name: npm test
       run: |
         npm test -- --coverage
       env:
         CI: 'true'
         APP_SECRET: 4C3E89619525956BA3573B8426F6C
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       with:
         name: unit-coverage
         path: coverage/unit
@@ -64,12 +63,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Cache Next.js build
-      uses: actions/cache@v1
+      uses: actions/cache@v2
       with:
         path: .next
         key: ${{ runner.os }}-next-build-${{ hashFiles('**/next.config.js') }}
-        restore-keys: |
-          ${{ runner.os }}-next-build-
+        restore-keys: ${{ runner.os }}-next-build-
     - uses: bahmutov/npm-install@v1
     - name: Prepare DB, build and start Next.js
       run: |
@@ -82,18 +80,18 @@ jobs:
         NODE_ENV: production
         CODE_COVERAGE: true
     - name: Run Cypress
-      uses: cypress-io/github-action@v1
+      uses: cypress-io/github-action@v2
       with:
         install: false
         wait-on: 'http://localhost:3000'
       env:
         APP_SECRET: 4C3E89619525956BA3573B8426F6C
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: Cypress screenshots
         path: cypress/screenshots
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: Cypress video
@@ -104,7 +102,7 @@ jobs:
         npx newman run https://api.getpostman.com/collections/367460-806c64d2-beba-4bfe-a2d6-7a346abab79d?apikey=$POSTMAN_API_KEY
       env:
         POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       with:
         name: e2e-coverage
         path: coverage/e2e
