@@ -87,7 +87,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-testing-library": "^3.10.0",
     "faker": "^5.1.0",
-    "husky": "^4.3.0",
+    "husky": "^4.3.4",
     "import-sort-parser-typescript": "^6.0.0",
     "import-sort-style-wes": "^3.0.2",
     "istanbul-lib-coverage": "^3.0.0",
