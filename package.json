@@ -59,7 +59,7 @@
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.2.2",
-    "@types/faker": "^5.1.4",
+    "@types/faker": "^5.1.5",
     "@types/jest": "^26.0.15",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/mongoose": "^5.10.0",
