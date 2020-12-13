@@ -51,7 +51,7 @@
   "devDependencies": {
     "@bahmutov/cy-api": "^1.4.3",
     "@cypress/code-coverage": "^3.8.5",
-    "@cypress/schema-tools": "^4.7.5",
+    "@cypress/schema-tools": "^4.7.7",
     "@cypress/webpack-preprocessor": "^5.5.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@shelf/jest-mongodb": "^1.2.3",
