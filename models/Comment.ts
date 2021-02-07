@@ -30,7 +30,7 @@ const CommentSchema = new Schema<Comment>(
 );
 CommentSchema.plugin(mongooseIdValidator, { message: 'not exits' });
 CommentSchema.methods.toJSON = function (this: Comment) {
-  const comment: Comment = this.toObject();
+  const comment = this.toObject();
 
   comment.id = comment._id;
   delete comment._id;
