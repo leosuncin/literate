@@ -1,7 +1,12 @@
 import { Comment } from 'models';
-import { object, string } from 'yup';
+import { AnySchema, object, string } from 'yup';
 
-export const CommentSchema = object<Pick<Comment, 'body'>>({
+type CommentSchema = Record<
+  keyof Pick<Comment, 'body'>,
+  AnySchema<Comment['body']>
+>;
+
+export const CommentSchema = object<CommentSchema>({
   body: string().required(),
 })
   .noUnknown(true)

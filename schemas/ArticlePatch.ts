@@ -1,6 +1,11 @@
 import { Article } from 'models';
-import { boolean, object } from 'yup';
+import { AnySchema, boolean, object } from 'yup';
 
-export const ArticlePatch = object<Pick<Article, 'draft'>>({
+type ArticlePatch = Record<
+  keyof Pick<Article, 'draft'>,
+  AnySchema<Article['draft']>
+>;
+
+export const ArticlePatch = object<ArticlePatch>({
   draft: boolean().required(),
 }).noUnknown();
