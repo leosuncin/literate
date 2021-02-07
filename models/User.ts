@@ -77,11 +77,15 @@ UserSchema.pre<User>('save', function (next) {
 
   return next();
 });
-UserSchema.pre<Query<User>>('findOneAndUpdate', function (next) {
-  if ('password' in this.getUpdate())
-    this.getUpdate().password = hash(this.getUpdate().password, 512);
+UserSchema.pre<Query<User, User>>('findOneAndUpdate', function (next) {
+  if (this.getUpdate().password != null) {
+    this.setUpdate({
+      ...this.getUpdate(),
+      password: hash(this.getUpdate().password, 512),
+    });
+  }
 
-  return next();
+  return next(null);
 });
 
 /* istanbul ignore if */
