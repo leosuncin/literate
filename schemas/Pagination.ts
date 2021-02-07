@@ -1,8 +1,8 @@
-import { number, object } from 'yup';
+import { number, NumberSchema, object } from 'yup';
 
 type Pagination = {
-  size?: number;
-  page?: number;
+  size?: NumberSchema;
+  page?: NumberSchema;
 };
 
 export const Pagination = object<Pagination>({

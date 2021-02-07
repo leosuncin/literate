@@ -1,7 +1,10 @@
 import { User } from 'models';
-import { object, string } from 'yup';
+import { AnySchema, object, string } from 'yup';
 
-type AuthLogin = Pick<User, 'email' | 'password'>;
+type AuthLogin = Record<
+  keyof Pick<User, 'email' | 'password'>,
+  AnySchema<User['email' | 'password']>
+>;
 
 export const AuthLogin = object<AuthLogin>()
   .shape<AuthLogin>({

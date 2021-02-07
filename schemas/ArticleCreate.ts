@@ -1,7 +1,10 @@
 import { Article } from 'models';
-import { array, object, string } from 'yup';
+import { AnySchema, array, object, string } from 'yup';
 
-type ArticleCreate = Pick<Article, 'title' | 'subtitle' | 'body' | 'tags'>;
+type ArticleCreate = Record<
+  keyof Pick<Article, 'title' | 'subtitle' | 'body' | 'tags'>,
+  AnySchema<Article['title' | 'subtitle' | 'body' | 'tags']>
+>;
 
 export const ArticleCreate = object<ArticleCreate>()
   .shape<ArticleCreate>({
