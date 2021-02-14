@@ -43,7 +43,7 @@
     "ololog": "^1.1.164",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-hook-form": "^6.14.2",
+    "react-hook-form": "^6.15.1",
     "swr": "^0.4.1",
     "xstate": "^4.16.2",
     "yup": "^0.32.8"
