@@ -60,7 +60,7 @@
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^13.0.16",
     "@types/faker": "^5.1.7",
-    "@types/jest": "^26.0.21",
+    "@types/jest": "^26.0.22",
     "@types/jsonwebtoken": "^8.5.1",
     "@types/mongoose": "^5.10.4",
     "@types/mongoose-unique-validator": "^1.0.4",
