@@ -57,7 +57,7 @@
     "@shelf/jest-mongodb": "^1.2.3",
     "@testing-library/cypress": "^7.0.4",
     "@testing-library/jest-dom": "^5.11.10",
-    "@testing-library/react": "^11.2.5",
+    "@testing-library/react": "^11.2.6",
     "@testing-library/user-event": "^13.0.16",
     "@types/faker": "^5.1.7",
     "@types/jest": "^26.0.22",
