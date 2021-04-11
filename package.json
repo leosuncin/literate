@@ -52,7 +52,7 @@
     "@bahmutov/cy-api": "^1.5.0",
     "@cypress/code-coverage": "^3.9.4",
     "@cypress/schema-tools": "^4.7.7",
-    "@cypress/webpack-preprocessor": "^5.6.0",
+    "@cypress/webpack-preprocessor": "^5.7.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@shelf/jest-mongodb": "^1.2.3",
     "@testing-library/cypress": "^7.0.5",
