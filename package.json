@@ -55,7 +55,7 @@
     "@cypress/webpack-preprocessor": "^5.7.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@shelf/jest-mongodb": "^1.2.3",
-    "@testing-library/cypress": "^7.0.5",
+    "@testing-library/cypress": "^7.0.6",
     "@testing-library/jest-dom": "^5.12.0",
     "@testing-library/react": "^11.2.6",
     "@testing-library/user-event": "^13.1.2",
