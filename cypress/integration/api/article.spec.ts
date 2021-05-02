@@ -203,7 +203,7 @@ describe('Article API', () => {
         url: '/api/article/2020-nagorno-karabakh-conflict-nxg8n7',
         method: 'PATCH',
         body: {
-          draft: faker.random.boolean(),
+          draft: faker.datatype.boolean(),
         },
         failOnStatusCode: false,
       }).then(({ status, body }) => {
@@ -257,7 +257,7 @@ describe('Article API', () => {
         url: '/api/article/leverage-agile-frameworks-cdg7ud',
         method: 'PATCH',
         body: {
-          draft: faker.random.boolean(),
+          draft: faker.datatype.boolean(),
         },
         headers: { authorization },
         failOnStatusCode: false,
@@ -314,7 +314,7 @@ describe('Article API', () => {
         url,
         method: 'PATCH',
         body: {
-          draft: faker.random.boolean(),
+          draft: faker.datatype.boolean(),
         },
         headers: { authorization },
         failOnStatusCode: false,
