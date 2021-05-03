@@ -16,7 +16,7 @@ describe('Register API', () => {
       method: 'POST',
       body: {
         fullName: faker.name.findName(),
-        email: faker.internet.exampleEmail(),
+        email: faker.internet.exampleEmail().toLowerCase(),
         password: faker.internet.password(8, true),
       },
     }).then(({ status, body }) => {

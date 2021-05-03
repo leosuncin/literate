@@ -44,7 +44,7 @@ describe('Login API', () => {
       url: '/api/auth/login',
       method: 'POST',
       body: {
-        email: faker.internet.email(),
+        email: faker.internet.email().toLowerCase(),
         password: faker.internet.password(16),
       },
       failOnStatusCode: false,
