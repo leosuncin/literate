@@ -1,34 +1,31 @@
 import faker from 'faker';
+import users from 'fixtures/users';
 import { StatusCodes } from 'http-status-codes';
-import type { ArticleDocument as Article } from 'models';
-import mongoose from 'mongoose';
+import type { ArticleJson, UserDocument } from 'models';
+import type { LeanDocument } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
+import Fixtures from 'node-mongodb-fixtures';
 import articleApiHandler from 'pages/api/article';
 import oneArticleApiHandler from 'pages/api/article/[slug]';
+import { ErrorResponse } from 'types';
 import * as db from 'utils/db';
 import { signJWT } from 'utils/jwt';
 
-async function createToken() {
-  const queryUser = { email: 'john@doe.me' };
-  await mongoose.models.User.findOneAndUpdate(
-    queryUser,
-    {
-      fullName: 'John Doe',
-      email: 'john@doe.me',
-      password: 'Pa$$w0rd!',
-    },
-    {
-      upsert: true,
-    },
-  ).exec();
-  const user = await mongoose.models.User.findOne(queryUser).exec();
+const fixtures = new Fixtures({ mute: true });
 
-  return signJWT(user);
-}
+const user = users[0] as LeanDocument<UserDocument>;
+
+const anotherUser = users[users.length - 1] as LeanDocument<UserDocument>;
 
 beforeAll(async () => {
-  await db.connect();
+  await fixtures.connect(process.env.MONGODB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  await fixtures.unload();
+  await fixtures.load();
+  await fixtures.disconnect();
 });
 
 afterAll(async () => {
@@ -39,7 +36,7 @@ describe('[POST] /api/article', () => {
   let token: string;
 
   beforeAll(async () => {
-    token = await createToken();
+    token = signJWT(user);
   });
 
   it('should require authentication', async () => {
@@ -51,6 +48,12 @@ describe('[POST] /api/article', () => {
     await articleApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.UNAUTHORIZED);
+    expect(res._getJSONData()).toMatchInlineSnapshot(`
+      Object {
+        "message": "Missing authorization header",
+        "statusCode": 401,
+      }
+    `);
   });
 
   it('should validate the body', async () => {
@@ -65,62 +68,82 @@ describe('[POST] /api/article', () => {
     await articleApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.UNPROCESSABLE_ENTITY);
+    expect(res._getJSONData()).toMatchInlineSnapshot(`
+      Object {
+        "errors": Array [
+          "subtitle is a required field",
+          "title is a required field",
+          "body is a required field",
+          "tags is a required field",
+        ],
+        "message": "Validation errors",
+        "statusCode": 422,
+      }
+    `);
   });
 
   it('should create an article', async () => {
+    const body = {
+      title: faker.company.catchPhrase(),
+      subtitle: faker.lorem.paragraph(),
+      body: faker.lorem.paragraphs(),
+      tags: faker.lorem.words().split(' '),
+    };
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'POST',
       headers: {
         authorization: `Bearer ${token}`,
       },
-      body: {
-        title: faker.company.catchPhrase(),
-        subtitle: faker.lorem.paragraph(),
-        body: faker.lorem.paragraphs(),
-        tags: faker.lorem.words().split(' '),
-      },
+      body,
     });
 
     await articleApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.CREATED);
+    expect(res._getJSONData()).toMatchObject<ArticleJson>({
+      title: body.title,
+      slug: expect.stringContaining(
+        faker.helpers.slugify(body.title).toLowerCase(),
+      ),
+      subtitle: body.subtitle,
+      draft: true,
+      body: body.body,
+      tags: expect.arrayContaining(body.tags),
+      author: expect.stringMatching(/[\da-f]{24}/),
+      createdAt: expect.stringMatching(
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/,
+      ),
+      updatedAt: expect.stringMatching(
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/,
+      ),
+    });
   });
 });
 
 describe('[GET] /api/article/[slug]', () => {
-  let article: Article;
-
-  beforeAll(async () => {
-    const user = await mongoose.models.User.findOne({
-      email: 'john@doe.me',
-    }).exec();
-    article = await new mongoose.models.Article({
-      title: faker.company.catchPhrase(),
-      subtitle: faker.lorem.paragraph(),
-      body: faker.lorem.paragraphs(),
-      tags: faker.lorem.words().split(' '),
-      author: user,
-    }).save();
-  });
-
   it('should fail when article not exists', async () => {
+    const query = {
+      slug: faker.helpers.slugify(faker.hacker.phrase()),
+    };
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'GET',
-      query: {
-        slug: faker.helpers.slugify(faker.hacker.phrase()),
-      },
+      query,
     });
 
     await oneArticleApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
+    expect(res._getJSONData()).toMatchObject<ErrorResponse>({
+      message: `Not found any article with slug: ${query.slug}`,
+      statusCode: StatusCodes.NOT_FOUND,
+    });
   });
 
   it('should get one article', async () => {
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'GET',
       query: {
-        slug: article.slug,
+        slug: '2020-nagorno-karabakh-conflict-nxg8n7',
       },
     });
 
@@ -132,35 +155,6 @@ describe('[GET] /api/article/[slug]', () => {
 });
 
 describe('[GET] /api/article', () => {
-  beforeAll(async () => {
-    const user = await mongoose.models.User.findOne({
-      email: 'john@doe.me',
-    }).exec();
-    await mongoose.models.Article.insertMany([
-      {
-        title: faker.company.catchPhrase(),
-        subtitle: faker.lorem.paragraph(),
-        body: faker.lorem.paragraphs(),
-        tags: faker.lorem.words().split(' '),
-        author: user,
-      },
-      {
-        title: faker.company.catchPhrase(),
-        subtitle: faker.lorem.paragraph(),
-        body: faker.lorem.paragraphs(),
-        tags: faker.lorem.words().split(' '),
-        author: user,
-      },
-      {
-        title: faker.company.catchPhrase(),
-        subtitle: faker.lorem.paragraph(),
-        body: faker.lorem.paragraphs(),
-        tags: faker.lorem.words().split(' '),
-        author: user,
-      },
-    ]);
-  });
-
   it('should validate pagination', async () => {
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'GET',
@@ -173,6 +167,15 @@ describe('[GET] /api/article', () => {
     await articleApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.BAD_REQUEST);
+    expect(res._getJSONData()).toMatchInlineSnapshot(`
+      Object {
+        "errors": Array [
+          "page must be greater than or equal to 1",
+        ],
+        "message": "Bad Request",
+        "statusCode": 400,
+      }
+    `);
   });
 
   it('should list the articles', async () => {
@@ -186,28 +189,17 @@ describe('[GET] /api/article', () => {
 });
 
 describe('[PUT] /api/article/[slug]', () => {
-  let article: Article;
   let token: string;
 
   beforeAll(async () => {
-    token = await createToken();
-    const user = await mongoose.models.User.findOne({
-      email: 'john@doe.me',
-    }).exec();
-    article = await new mongoose.models.Article({
-      title: faker.company.catchPhrase(),
-      subtitle: faker.lorem.paragraph(),
-      body: faker.lorem.paragraphs(),
-      tags: faker.lorem.words().split(' '),
-      author: user,
-    }).save();
+    token = signJWT(user);
   });
 
   it('should require authentication', async () => {
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'PUT',
       query: {
-        slug: article.slug,
+        slug: 'optio-et-voluptatibus-stv3jn',
       },
       body: {},
     });
@@ -224,7 +216,7 @@ describe('[PUT] /api/article/[slug]', () => {
         authorization: `Bearer ${token}`,
       },
       query: {
-        slug: article.slug,
+        slug: 'optio-et-voluptatibus-stv3jn',
       },
       body: {
         title: null,
@@ -259,18 +251,13 @@ describe('[PUT] /api/article/[slug]', () => {
   });
 
   it('should not allow to edit an article that belong to other', async () => {
-    const other = await new mongoose.models.User({
-      fullName: faker.name.findName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(8),
-    }).save();
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'PUT',
       headers: {
-        authorization: `Bearer ${signJWT(other)}`,
+        authorization: `Bearer ${signJWT(anotherUser)}`,
       },
       query: {
-        slug: article.slug,
+        slug: 'optio-et-voluptatibus-stv3jn',
       },
       body: {
         title: faker.company.catchPhrase(),
@@ -292,7 +279,7 @@ describe('[PUT] /api/article/[slug]', () => {
         authorization: `Bearer ${token}`,
       },
       query: {
-        slug: article.slug,
+        slug: 'optio-et-voluptatibus-stv3jn',
       },
       body: {
         title: faker.company.catchPhrase(),
@@ -309,32 +296,20 @@ describe('[PUT] /api/article/[slug]', () => {
 });
 
 describe('[PATCH] /api/article/[slug]', () => {
-  let article: Article;
   let token: string;
 
   beforeAll(async () => {
-    token = await createToken();
-    const user = await mongoose.models.User.findOne({
-      email: 'john@doe.me',
-    }).exec();
-    article = await new mongoose.models.Article({
-      title: faker.company.catchPhrase(),
-      subtitle: faker.lorem.paragraph(),
-      body: faker.lorem.paragraphs(),
-      tags: faker.lorem.words().split(' '),
-      author: user,
-    }).save();
+    token = signJWT(user);
   });
 
   it('should fail when article not exists', async () => {
+    const slug = faker.helpers.slugify(faker.hacker.phrase()).toLowerCase();
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'PATCH',
       headers: {
         authorization: `Bearer ${token}`,
       },
-      query: {
-        slug: faker.helpers.slugify(faker.hacker.phrase()),
-      },
+      query: { slug },
       body: {
         draft: false,
       },
@@ -343,21 +318,20 @@ describe('[PATCH] /api/article/[slug]', () => {
     await oneArticleApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
+    expect(res._getJSONData()).toMatchObject<ErrorResponse>({
+      message: `Not found any article with slug: ${slug}`,
+      statusCode: 404,
+    });
   });
 
   it('should not allow to change state of an article that belong to other', async () => {
-    const other = await new mongoose.models.User({
-      fullName: faker.name.findName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(8),
-    }).save();
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'PATCH',
       headers: {
-        authorization: `Bearer ${signJWT(other)}`,
+        authorization: `Bearer ${signJWT(anotherUser)}`,
       },
       query: {
-        slug: article.slug,
+        slug: 'funneling-branding-in-order-to-disrupt-the-balance-h7bs3m',
       },
       body: {
         draft: false,
@@ -367,6 +341,12 @@ describe('[PATCH] /api/article/[slug]', () => {
     await oneArticleApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
+    expect(res._getJSONData()).toMatchInlineSnapshot(`
+      Object {
+        "message": "You are not the author",
+        "statusCode": 403,
+      }
+    `);
   });
 
   it('should change the state of an article', async () => {
@@ -376,7 +356,7 @@ describe('[PATCH] /api/article/[slug]', () => {
         authorization: `Bearer ${token}`,
       },
       query: {
-        slug: article.slug,
+        slug: 'funneling-branding-in-order-to-disrupt-the-balance-h7bs3m',
       },
       body: {
         draft: false,
@@ -391,28 +371,17 @@ describe('[PATCH] /api/article/[slug]', () => {
 });
 
 describe('[DELETE] /api/article/[slug]', () => {
-  let article: Article;
   let token: string;
 
   beforeAll(async () => {
-    token = await createToken();
-    const user = await mongoose.models.User.findOne({
-      email: 'john@doe.me',
-    }).exec();
-    article = await new mongoose.models.Article({
-      title: faker.company.catchPhrase(),
-      subtitle: faker.lorem.paragraph(),
-      body: faker.lorem.paragraphs(),
-      tags: faker.lorem.words().split(' '),
-      author: user,
-    }).save();
+    token = signJWT(user);
   });
 
   it('should require authentication', async () => {
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'DELETE',
       query: {
-        slug: article.slug,
+        slug: '2020-nagorno-karabakh-conflict-nxg8n7',
       },
     });
 
@@ -438,18 +407,13 @@ describe('[DELETE] /api/article/[slug]', () => {
   });
 
   it('should not allow to remove an article that belong to other', async () => {
-    const other = await new mongoose.models.User({
-      fullName: faker.name.findName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(8),
-    }).save();
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'DELETE',
       headers: {
-        authorization: `Bearer ${signJWT(other)}`,
+        authorization: `Bearer ${signJWT(anotherUser)}`,
       },
       query: {
-        slug: article.slug,
+        slug: '2020-nagorno-karabakh-conflict-nxg8n7',
       },
     });
 
@@ -465,7 +429,7 @@ describe('[DELETE] /api/article/[slug]', () => {
         authorization: `Bearer ${token}`,
       },
       query: {
-        slug: article.slug,
+        slug: '2020-nagorno-karabakh-conflict-nxg8n7',
       },
     });
 

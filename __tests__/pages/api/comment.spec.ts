@@ -1,43 +1,42 @@
 import faker from 'faker';
 import { StatusCodes } from 'http-status-codes';
 import type {
-  ArticleDocument as Article,
-  CommentDocument as Comment,
+  ArticleDocument,
+  CommentDocument,
+  CommentJson,
+  UserDocument,
 } from 'models';
-import mongoose from 'mongoose';
+import { Article, Comment, User } from 'models';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
 import commentApiHandler from 'pages/api/article/[slug]/comment';
 import oneCommentApiHandler from 'pages/api/article/[slug]/comment/[id]';
+import { ErrorResponse } from 'types';
 import * as db from 'utils/db';
 import { signJWT } from 'utils/jwt';
 
 async function prepareTest() {
-  const queryUser = { email: 'john@doe.me' };
+  const user = new User({
+    fullName: faker.name.findName(),
+    email: faker.internet.exampleEmail(),
+    password: faker.internet.password(),
+  });
 
-  await mongoose.models.User.findOneAndUpdate(
-    queryUser,
-    {
-      fullName: 'John Doe',
-      email: 'john@doe.me',
-      password: 'Pa$$w0rd!',
-    },
-    {
-      upsert: true,
-    },
-  ).exec();
-  const user = await mongoose.models.User.findOne(queryUser).exec();
+  await user.save();
 
-  const token = signJWT(user);
-  const article: Article = await new mongoose.models.Article({
+  const article = new Article({
     title: faker.company.catchPhrase(),
     subtitle: faker.lorem.paragraph(),
     body: faker.lorem.paragraphs(),
     tags: faker.lorem.words().split(' '),
-    author: user,
-  }).save();
+    author: user._id,
+  });
 
-  return { token, article };
+  await article.save();
+
+  const token = signJWT(user);
+
+  return { token, article, user };
 }
 
 beforeAll(async () => {
@@ -50,7 +49,7 @@ afterAll(async () => {
 
 describe('[POST] /api/article/[slug]/comment', () => {
   let token: string;
-  let article: Article;
+  let article: ArticleDocument;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -59,14 +58,13 @@ describe('[POST] /api/article/[slug]/comment', () => {
   });
 
   it('should fail when article not exists', async () => {
+    const slug = faker.lorem.slug(5);
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'POST',
       headers: {
         authorization: `Bearer ${token}`,
       },
-      query: {
-        slug: faker.lorem.slug(5),
-      },
+      query: { slug },
       body: {
         body: faker.lorem.paragraph(),
       },
@@ -75,9 +73,16 @@ describe('[POST] /api/article/[slug]/comment', () => {
     await commentApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
+    expect(res._getJSONData()).toMatchObject<ErrorResponse>({
+      message: `Not found any article with slug: ${slug}`,
+      statusCode: res._getStatusCode(),
+    });
   });
 
   it('should add a new comment', async () => {
+    const body = {
+      body: faker.lorem.paragraph(),
+    };
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'POST',
       headers: {
@@ -86,45 +91,57 @@ describe('[POST] /api/article/[slug]/comment', () => {
       query: {
         slug: article.slug,
       },
-      body: {
-        body: faker.lorem.paragraph(),
-      },
+      body,
     });
 
     await commentApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.CREATED);
+    expect(res._getJSONData()).toMatchObject<CommentJson>({
+      id: expect.stringMatching(/[\da-f]{24}/),
+      body: body.body,
+      author: expect.stringMatching(/[\da-f]{24}/),
+      createdAt: expect.stringMatching(
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/,
+      ),
+      updatedAt: expect.stringMatching(
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/,
+      ),
+    });
   });
 });
 
 describe('[GET] /api/article/[slug]/comment/[id]', () => {
-  let comment: Comment;
-  let article: Article;
+  let comment: CommentDocument;
+  let article: ArticleDocument;
 
   beforeAll(async () => {
     const result = await prepareTest();
-    const author = await mongoose.models.User.findOne({
-      email: 'john@doe.me',
-    }).exec();
-    comment = await new mongoose.models.Comment({
+    comment = new Comment({
       body: faker.lorem.paragraph(),
       article: result.article,
-      author,
-    }).save();
+      author: result.user,
+    });
+    await comment.save();
     article = result.article;
   });
 
   it('should fail when comment not exists', async () => {
+    const id = faker.datatype.hexaDecimal(24).substr(2);
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       query: {
         slug: article.slug,
-        id: mongoose.Types.ObjectId(),
+        id,
       },
     });
 
     await oneCommentApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
+    expect(res._getJSONData()).toMatchObject<ErrorResponse>({
+      message: `Not found any comment with id: ${id}`,
+      statusCode: res._getStatusCode(),
+    });
   });
 
   it('should get one comment', async () => {
@@ -142,7 +159,7 @@ describe('[GET] /api/article/[slug]/comment/[id]', () => {
 });
 
 describe('[GET] /api/article/[slug]/comment', () => {
-  let article: Article;
+  let article: ArticleDocument;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -150,15 +167,20 @@ describe('[GET] /api/article/[slug]/comment', () => {
   });
 
   it('should fail when article not exists', async () => {
+    const slug = faker.lorem.slug(5);
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       query: {
-        slug: faker.lorem.slug(5),
+        slug,
       },
     });
 
     await commentApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.NOT_FOUND);
+    expect(res._getJSONData()).toMatchObject<ErrorResponse>({
+      message: `Not found any article with slug: ${slug}`,
+      statusCode: res._getStatusCode(),
+    });
   });
 
   it('should list the comments', async () => {
@@ -177,24 +199,25 @@ describe('[GET] /api/article/[slug]/comment', () => {
 
 describe('[PUT] /api/article/[slug]/comment/[id]', () => {
   let token: string;
-  let comment: Comment;
-  let article: Article;
+  let comment: CommentDocument;
+  let article: ArticleDocument;
+  let user: UserDocument;
 
   beforeAll(async () => {
     const result = await prepareTest();
-    const author = await mongoose.models.User.findOne({
-      email: 'john@doe.me',
-    }).exec();
     token = result.token;
     article = result.article;
-    comment = await new mongoose.models.Comment({
+    user = result.user;
+    comment = new Comment({
       body: faker.lorem.paragraph(),
       article: result.article,
-      author,
-    }).save();
+      author: user,
+    });
+    await comment.save();
   });
 
   it('should fail when comment not exists', async () => {
+    const id = faker.datatype.hexaDecimal(24).substr(2);
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'PUT',
       headers: {
@@ -202,7 +225,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
       },
       query: {
         slug: article.slug,
-        id: mongoose.Types.ObjectId(),
+        id,
       },
       body: {
         body: faker.lorem.paragraph(),
@@ -215,7 +238,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
   });
 
   it('should not allow to edit a comment that belong to other', async () => {
-    const other = await new mongoose.models.User({
+    const otherUser = await new User({
       fullName: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password(8),
@@ -223,7 +246,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'PUT',
       headers: {
-        authorization: `Bearer ${signJWT(other)}`,
+        authorization: `Bearer ${signJWT(otherUser)}`,
       },
       query: {
         slug: article.slug,
@@ -237,9 +260,18 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
     await oneCommentApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.FORBIDDEN);
+    expect(res._getJSONData()).toMatchInlineSnapshot(`
+      Object {
+        "message": "You are not the author",
+        "statusCode": 403,
+      }
+    `);
   });
 
   it('should edit a comment', async () => {
+    const body = {
+      body: faker.lorem.paragraph(),
+    };
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'PUT',
       headers: {
@@ -249,35 +281,47 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
         slug: article.slug,
         id: comment.id,
       },
-      body: {
-        body: faker.lorem.paragraph(),
-      },
+      body,
     });
 
     await oneCommentApiHandler(req as any, res);
 
     expect(res._getStatusCode()).toBe(StatusCodes.OK);
+    expect(res._getJSONData()).toMatchObject<CommentJson>({
+      id: expect.stringMatching(/[\da-f]{24}/),
+      body: body.body,
+      author: {
+        avatar: user.avatar,
+        bio: user.bio,
+        displayName: user.displayName,
+        email: user.email,
+        fullName: user.fullName,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
+      createdAt: expect.stringMatching(
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/,
+      ),
+      updatedAt: expect.stringMatching(
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/,
+      ),
+    });
   });
 });
 
 describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
   let token: string;
-  let comment: Comment;
-  let article: Article;
+  let comment: CommentDocument;
+  let article: ArticleDocument;
 
   beforeAll(async () => {
     const result = await prepareTest();
-    const author = await new mongoose.models.User({
-      fullName: faker.name.findName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(),
-    }).save();
     article = result.article;
-    token = signJWT(author);
-    comment = await new mongoose.models.Comment({
+    token = result.token;
+    comment = await new Comment({
       body: faker.lorem.paragraph(),
       article: result.article,
-      author,
+      author: result.user,
     }).save();
   });
 
@@ -299,6 +343,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
   });
 
   it('should fail when comment not exists', async () => {
+    const id = faker.datatype.hexaDecimal(24).substr(2);
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'DELETE',
       headers: {
@@ -306,7 +351,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
       },
       query: {
         slug: article.slug,
-        id: mongoose.Types.ObjectId(),
+        id,
       },
     });
 
@@ -316,7 +361,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
   });
 
   it('should not allow to remove a comment that belong to other', async () => {
-    const other = await new mongoose.models.User({
+    const otherUser = await new User({
       fullName: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password(8),
@@ -324,7 +369,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       method: 'DELETE',
       headers: {
-        authorization: `Bearer ${signJWT(other)}`,
+        authorization: `Bearer ${signJWT(otherUser)}`,
       },
       query: {
         slug: article.slug,
