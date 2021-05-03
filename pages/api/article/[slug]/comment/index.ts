@@ -18,9 +18,7 @@ const createCommentHandler: NextHttpHandler = async (req, res) => {
       `Not found any article with slug: ${req.query.slug}`,
     );
 
-  const comment = new Comment(req.body);
-  comment.article = article._id;
-  comment.author = req.user._id;
+  const comment = new Comment({ ...req.body, author: req.user, article });
 
   await comment.save();
 

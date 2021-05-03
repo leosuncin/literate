@@ -11,8 +11,7 @@ import { articleCreate, pagination } from 'schemas';
 import { NextHttpHandler } from 'types';
 
 const createArticleHandler: NextHttpHandler = async (req, res) => {
-  const article = new Article(req.body);
-  article.author = req.user._id;
+  const article = new Article({ ...req.body, author: req.user });
   await article.save();
 
   return res.status(StatusCodes.CREATED).json(article.toJSON());
