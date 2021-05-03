@@ -50,11 +50,13 @@ afterAll(async () => {
 describe('[POST] /api/article/[slug]/comment', () => {
   let token: string;
   let article: ArticleDocument;
+  let user: UserDocument;
 
   beforeAll(async () => {
     const result = await prepareTest();
     token = result.token;
     article = result.article;
+    user = result.user;
   });
 
   it('should fail when article not exists', async () => {
@@ -100,7 +102,15 @@ describe('[POST] /api/article/[slug]/comment', () => {
     expect(res._getJSONData()).toMatchObject<CommentJson>({
       id: expect.stringMatching(/[\da-f]{24}/),
       body: body.body,
-      author: expect.stringMatching(/[\da-f]{24}/),
+      author: {
+        avatar: user.avatar,
+        bio: user.bio,
+        displayName: user.displayName,
+        email: user.email,
+        fullName: user.fullName,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
       createdAt: expect.stringMatching(
         /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/,
       ),
