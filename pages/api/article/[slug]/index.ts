@@ -7,7 +7,7 @@ import {
   withAuthentication,
 } from 'middlewares';
 import { Article, ArticlePopulatedDocument } from 'models';
-import { ArticlePatch, ArticleUpdate } from 'schemas';
+import { articlePatch, articleUpdate } from 'schemas';
 import { ForbiddenError, NextHttpHandler, NotFoundError } from 'types';
 
 const showArticleHandler: NextHttpHandler = async (req, res) => {
@@ -93,13 +93,13 @@ export default catchErrors(
           return showArticleHandler(req, res);
         case 'PUT':
           return withAuthentication(
-            validateBody(ArticleUpdate, editArticleHandler),
+            validateBody(articleUpdate, editArticleHandler),
           )(req, res);
         case 'DELETE':
           return withAuthentication(removeArticleHandler)(req, res);
         case 'PATCH':
           return withAuthentication(
-            validateBody(ArticlePatch, patchArticleHandler),
+            validateBody(articlePatch, patchArticleHandler),
           )(req, res);
       }
     }),

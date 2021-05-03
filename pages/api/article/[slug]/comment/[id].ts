@@ -7,7 +7,7 @@ import {
   withAuthentication,
 } from 'middlewares';
 import { Article, Comment, CommentPopulatedDocument } from 'models';
-import { CommentSchema } from 'schemas';
+import { commentCreate } from 'schemas';
 import { ForbiddenError, NextHttpHandler, NotFoundError } from 'types';
 
 const showCommentHandler: NextHttpHandler = async (req, res) => {
@@ -74,7 +74,7 @@ export default catchErrors(
           return showCommentHandler(req, res);
         case 'PUT':
           return withAuthentication(
-            validateBody(CommentSchema, editCommentHandler),
+            validateBody(commentCreate, editCommentHandler),
           )(req, res);
         case 'DELETE':
           return withAuthentication(removeCommentHandler)(req, res);
