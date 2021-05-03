@@ -1,4 +1,4 @@
-import { User } from 'models';
+import type { UserBase as User } from 'models';
 import { AnySchema, object, string } from 'yup';
 
 type AuthLogin = Record<

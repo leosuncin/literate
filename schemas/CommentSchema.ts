@@ -1,4 +1,4 @@
-import { Comment } from 'models';
+import type { CommentBase as Comment } from 'models';
 import { AnySchema, object, string } from 'yup';
 
 type CommentSchema = Record<

@@ -12,7 +12,7 @@ import { NextHttpHandler } from 'types';
 
 const createArticleHandler: NextHttpHandler = async (req, res) => {
   const article = new Article(req.body);
-  article.author = req.user;
+  article.author = req.user._id;
   await article.save();
 
   return res.status(StatusCodes.CREATED).json(article.toJSON());

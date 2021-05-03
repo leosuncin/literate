@@ -1,6 +1,9 @@
 import faker from 'faker';
 import { StatusCodes } from 'http-status-codes';
-import type { Article, Comment } from 'models';
+import type {
+  ArticleDocument as Article,
+  CommentDocument as Comment,
+} from 'models';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';
@@ -26,7 +29,7 @@ async function prepareTest() {
   const user = await mongoose.models.User.findOne(queryUser).exec();
 
   const token = signJWT(user);
-  const article = await new mongoose.models.Article({
+  const article: Article = await new mongoose.models.Article({
     title: faker.company.catchPhrase(),
     subtitle: faker.lorem.paragraph(),
     body: faker.lorem.paragraphs(),
@@ -96,6 +99,7 @@ describe('[POST] /api/article/[slug]/comment', () => {
 
 describe('[GET] /api/article/[slug]/comment/[id]', () => {
   let comment: Comment;
+  let article: Article;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -107,12 +111,13 @@ describe('[GET] /api/article/[slug]/comment/[id]', () => {
       article: result.article,
       author,
     }).save();
+    article = result.article;
   });
 
   it('should fail when comment not exists', async () => {
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       query: {
-        slug: comment.article.slug,
+        slug: article.slug,
         id: mongoose.Types.ObjectId(),
       },
     });
@@ -125,7 +130,7 @@ describe('[GET] /api/article/[slug]/comment/[id]', () => {
   it('should get one comment', async () => {
     const { req, res } = createMocks<NextApiRequest, NextApiResponse>({
       query: {
-        slug: comment.article.slug,
+        slug: article.slug,
         id: comment.id,
       },
     });
@@ -173,6 +178,7 @@ describe('[GET] /api/article/[slug]/comment', () => {
 describe('[PUT] /api/article/[slug]/comment/[id]', () => {
   let token: string;
   let comment: Comment;
+  let article: Article;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -180,6 +186,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
       email: 'john@doe.me',
     }).exec();
     token = result.token;
+    article = result.article;
     comment = await new mongoose.models.Comment({
       body: faker.lorem.paragraph(),
       article: result.article,
@@ -194,7 +201,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
         authorization: `Bearer ${token}`,
       },
       query: {
-        slug: comment.article.slug,
+        slug: article.slug,
         id: mongoose.Types.ObjectId(),
       },
       body: {
@@ -219,7 +226,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
         authorization: `Bearer ${signJWT(other)}`,
       },
       query: {
-        slug: comment.article.slug,
+        slug: article.slug,
         id: comment.id,
       },
       body: {
@@ -239,7 +246,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
         authorization: `Bearer ${token}`,
       },
       query: {
-        slug: comment.article.slug,
+        slug: article.slug,
         id: comment.id,
       },
       body: {
@@ -256,6 +263,7 @@ describe('[PUT] /api/article/[slug]/comment/[id]', () => {
 describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
   let token: string;
   let comment: Comment;
+  let article: Article;
 
   beforeAll(async () => {
     const result = await prepareTest();
@@ -264,6 +272,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
       email: faker.internet.email(),
       password: faker.internet.password(),
     }).save();
+    article = result.article;
     token = signJWT(author);
     comment = await new mongoose.models.Comment({
       body: faker.lorem.paragraph(),
@@ -296,7 +305,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
         authorization: `Bearer ${token}`,
       },
       query: {
-        slug: comment.article.slug,
+        slug: article.slug,
         id: mongoose.Types.ObjectId(),
       },
     });
@@ -318,7 +327,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
         authorization: `Bearer ${signJWT(other)}`,
       },
       query: {
-        slug: comment.article.slug,
+        slug: article.slug,
         id: comment.id,
       },
     });
@@ -335,7 +344,7 @@ describe('[DELETE] /api/article/[slug]/comment/[id]', () => {
         authorization: `Bearer ${token}`,
       },
       query: {
-        slug: comment.article.slug,
+        slug: article.slug,
         id: comment.id,
       },
     });

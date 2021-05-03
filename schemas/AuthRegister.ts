@@ -1,5 +1,5 @@
-import { User } from 'models';
-import { AnySchema, object, ObjectSchema, string } from 'yup';
+import { UserBase as User } from 'models';
+import { AnySchema, object, string } from 'yup';
 
 type AuthRegister = Record<
   keyof Pick<User, 'fullName' | 'email' | 'password'>,

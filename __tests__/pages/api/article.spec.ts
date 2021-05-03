@@ -1,6 +1,6 @@
 import faker from 'faker';
 import { StatusCodes } from 'http-status-codes';
-import type { Article } from 'models';
+import type { ArticleDocument as Article } from 'models';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';

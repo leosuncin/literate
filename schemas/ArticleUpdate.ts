@@ -1,4 +1,4 @@
-import { Article } from 'models';
+import type { ArticleBase as Article } from 'models';
 import { AnySchema, array, object, string } from 'yup';
 
 type ArticleUpdate = Record<

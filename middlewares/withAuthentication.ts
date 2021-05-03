@@ -11,7 +11,7 @@ export function withAuthentication(handler: NextHttpHandler): NextHttpHandler {
 
     if (!token) throw new UnauthorizedError('Missing authorization token');
 
-    let payload;
+    let payload: Record<string, unknown>;
     try {
       payload = decodeJWT(token);
     } catch (error) {

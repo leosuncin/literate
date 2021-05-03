@@ -1,4 +1,4 @@
-import { Article } from 'models';
+import type { ArticleBase as Article } from 'models';
 import { AnySchema, boolean, object } from 'yup';
 
 type ArticlePatch = Record<

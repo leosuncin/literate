@@ -1,53 +1,75 @@
 import slugify from '@sindresorhus/slugify';
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
+import type { Document, LeanDocument, Types } from 'mongoose';
 import mongooseUniqueValidator from 'mongoose-unique-validator';
 
-import { User } from './User';
+import type { UserDocument, UserJson } from './User';
 
-export interface Article extends Document {
+export interface ArticleBase {
   title: string;
   slug: string;
   subtitle: string;
   draft: boolean;
   body: string;
   tags: string[];
-  author: User;
+  author: Types.ObjectId;
 }
 
-const ArticleSchema = new Schema<Article>(
+export interface ArticleDocument extends Document<Types.ObjectId>, ArticleBase {
+  author: UserDocument['_id'];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ArticlePopulatedDocument
+  extends Omit<ArticleDocument, 'author'> {
+  author: UserDocument;
+}
+
+export interface ArticleJson
+  extends Omit<
+    LeanDocument<ArticleDocument>,
+    '_id' | 'id' | '__v' | 'author' | 'createdAt' | 'updatedAt'
+  > {
+  author: string | UserJson;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const ArticleSchema = new mongoose.Schema<ArticleDocument>(
   {
     title: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
       index: true,
     },
     slug: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
       unique: true,
       lowercase: true,
     },
     subtitle: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
       trim: true,
     },
     draft: {
-      type: Schema.Types.Boolean,
+      type: Boolean,
       default: true,
     },
     body: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
       trim: true,
     },
     tags: [
       {
-        type: Schema.Types.String,
+        type: String,
       },
     ],
     author: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
@@ -56,7 +78,8 @@ const ArticleSchema = new Schema<Article>(
 );
 
 ArticleSchema.plugin(mongooseUniqueValidator, { message: 'already exists' });
-ArticleSchema.pre<Article>('validate', function (next) {
+
+ArticleSchema.pre<ArticleDocument>('validate', function (next) {
   const hash = this.slug
     ? this.slug.substr(this.slug.lastIndexOf('-'))
     : '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
@@ -65,11 +88,13 @@ ArticleSchema.pre<Article>('validate', function (next) {
 
   next();
 });
-ArticleSchema.methods.toJSON = function (this: Article) {
+
+ArticleSchema.methods.toJSON = function (this: ArticleDocument) {
   const article = this.toObject();
 
   delete article.__v;
   delete article._id;
+  // @ts-expect-error
   article.author = this.author.toJSON();
 
   return article;
@@ -83,4 +108,7 @@ if (
   mongoose.deleteModel('Article');
 }
 
-export const Article = mongoose.model<Article>('Article', ArticleSchema);
+export const Article = mongoose.model<ArticleDocument>(
+  'Article',
+  ArticleSchema,
+);

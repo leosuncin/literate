@@ -6,7 +6,7 @@ import {
   validateMethod,
   withAuthentication,
 } from 'middlewares';
-import { Article } from 'models';
+import { Article, ArticlePopulatedDocument } from 'models';
 import { ArticlePatch, ArticleUpdate } from 'schemas';
 import { ForbiddenError, NextHttpHandler, NotFoundError } from 'types';
 
@@ -23,9 +23,9 @@ const showArticleHandler: NextHttpHandler = async (req, res) => {
   return res.json(article.toJSON());
 };
 const editArticleHandler: NextHttpHandler = async (req, res) => {
-  let article = await Article.findOne({
+  let article = ((await Article.findOne({
     slug: req.query.slug as string,
-  }).populate('author');
+  }).populate('author')) as unknown) as ArticlePopulatedDocument;
 
   if (!article)
     throw new NotFoundError(
@@ -42,15 +42,15 @@ const editArticleHandler: NextHttpHandler = async (req, res) => {
   if (article.isModified('title'))
     res.setHeader('Location', `/api/article/${article.slug}`);
 
-  article = await article.save();
+  await article.save();
 
   return res.json(article.toJSON());
 };
 
 const removeArticleHandler: NextHttpHandler = async (req, res) => {
-  const article = await Article.findOne({
+  const article = ((await Article.findOne({
     slug: req.query.slug as string,
-  }).populate('author');
+  }).populate('author')) as unknown) as ArticlePopulatedDocument;
 
   if (!article)
     throw new NotFoundError(
@@ -66,9 +66,9 @@ const removeArticleHandler: NextHttpHandler = async (req, res) => {
 };
 
 const patchArticleHandler: NextHttpHandler = async (req, res) => {
-  const article = await Article.findOne({
+  const article = ((await Article.findOne({
     slug: req.query.slug as string,
-  }).populate('author');
+  }).populate('author')) as unknown) as ArticlePopulatedDocument;
 
   if (!article)
     throw new NotFoundError(

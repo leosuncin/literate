@@ -1,49 +1,70 @@
-import mongoose, { Document, Query, Schema } from 'mongoose';
+import mongoose from 'mongoose';
+import type { Document, LeanDocument, Query, Types } from 'mongoose';
 import mongooseUniqueValidator from 'mongoose-unique-validator';
 import { compare, hash } from 'utils/encrypt';
 
-export interface User extends Document {
+export interface UserBase {
   fullName: string;
   displayName: string;
   email: string;
   password: string;
   bio?: string;
   avatar?: string;
+}
+
+export interface UserDocument extends Document<Types.ObjectId>, UserBase {
+  createdAt: Date;
+  updatedAt: Date;
   comparePassword(plainPassword: string): boolean;
 }
 
-const UserSchema = new Schema<User>(
+export interface UserJson
+  extends Omit<
+    LeanDocument<UserDocument>,
+    | '_id'
+    | 'id'
+    | '__v'
+    | 'password'
+    | 'comparePassword'
+    | 'createdAt'
+    | 'updatedAt'
+  > {
+  createdAt: string;
+  updatedAt: string;
+}
+
+const UserSchema = new mongoose.Schema<UserDocument>(
   {
     fullName: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
     },
     displayName: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
-      default(this: User) {
+      default(this: UserDocument) {
         return this.fullName;
       },
     },
     email: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
       lowercase: true,
       unique: true,
     },
     password: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
     },
     bio: {
-      type: Schema.Types.String,
+      type: String,
       required: false,
       default: null,
     },
     avatar: {
-      type: Schema.Types.String,
+      type: String,
       required: false,
-      default(this: User) {
+      default(this: UserDocument) {
         return `https://api.adorable.io/avatars/64/${encodeURIComponent(
           this.displayName,
         )}`;
@@ -54,13 +75,12 @@ const UserSchema = new Schema<User>(
 );
 
 UserSchema.plugin(mongooseUniqueValidator, { message: 'is already taken' });
-UserSchema.methods.comparePassword = function (
-  this: User,
-  plainPassword: string,
-): boolean {
+
+UserSchema.methods.comparePassword = function (plainPassword: string): boolean {
   return compare(this.password, plainPassword);
 };
-UserSchema.methods.toJSON = function (this: User) {
+
+UserSchema.methods.toJSON = function (this: UserDocument) {
   const obj = this.toObject();
 
   delete obj.password;
@@ -69,24 +89,30 @@ UserSchema.methods.toJSON = function (this: User) {
 
   return obj;
 };
+
 UserSchema.index({ displayName: 1, email: 1 });
-UserSchema.pre<User>('save', function (next) {
+
+UserSchema.pre<UserDocument>('save', function (next) {
   if (!this.isModified('password')) return next();
 
   this.password = hash(this.password, 512);
 
   return next();
 });
-UserSchema.pre<Query<User, User>>('findOneAndUpdate', function (next) {
-  if (this.getUpdate().password != null) {
-    this.setUpdate({
-      ...this.getUpdate(),
-      password: hash(this.getUpdate().password, 512),
-    });
-  }
 
-  return next(null);
-});
+UserSchema.pre<Query<UserDocument, UserDocument>>(
+  'findOneAndUpdate',
+  function (next) {
+    if (this.getUpdate().password != null) {
+      this.setUpdate({
+        ...this.getUpdate(),
+        password: hash(this.getUpdate().password, 512),
+      });
+    }
+
+    return next(null);
+  },
+);
 
 /* istanbul ignore if */
 if (
@@ -96,4 +122,4 @@ if (
   mongoose.deleteModel('User');
 }
 
-export const User = mongoose.model<User>('User', UserSchema);
+export const User = mongoose.model<UserDocument>('User', UserSchema);
