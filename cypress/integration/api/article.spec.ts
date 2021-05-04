@@ -11,6 +11,10 @@ describe('Article API', () => {
   const url = '/api/article';
   let authorization: string;
 
+  before(() => {
+    cy.task('loadFixtures');
+  });
+
   beforeEach(() => {
     const user = {
       _id: '5e9cce858f8fa801aa70f569',
