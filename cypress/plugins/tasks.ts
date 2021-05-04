@@ -1,7 +1,9 @@
+import faker from 'faker';
 import { Secret, sign, SignOptions } from 'jsonwebtoken';
+import { Article, ArticleBase, User } from 'models';
 import Fixtures, { Options } from 'node-mongodb-fixtures';
-
-import { signJWT } from '../../utils/jwt';
+import * as db from 'utils/db';
+import { signJWT } from 'utils/jwt';
 
 export type SignParams = {
   payload: string | Record<string, any>;
@@ -67,4 +69,34 @@ export async function loadFixtures(options: Options = {}) {
   await fixtures.disconnect();
 
   return true;
+}
+
+export async function createArticle(overrides: Partial<ArticleBase> = {}) {
+  await db.connect();
+
+  if (!overrides.author) {
+    const author = new User({
+      fullName: faker.name.findName(),
+      email: faker.internet.exampleEmail().toLowerCase(),
+      password: faker.internet.password(),
+    });
+
+    await author.save();
+
+    overrides.author = author._id;
+  }
+
+  const article = new Article({
+    title: faker.company.catchPhrase(),
+    subtitle: faker.lorem.paragraph(),
+    body: faker.lorem.paragraphs(),
+    tags: faker.lorem.words().split(' '),
+    ...overrides,
+  });
+
+  await article.save();
+
+  await db.disconnect();
+
+  return article.toJSON();
 }
