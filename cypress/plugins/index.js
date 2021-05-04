@@ -10,17 +10,21 @@
 
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
-import jwtTask from './jwt-task';
+import { createArticle, jwtTask, loadFixtures } from './tasks';
 
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   require('cypress-dotenv')(config, {}, true);
   require('@cypress/code-coverage/task')(on, config);
-  on(
-    'task',
-    jwtTask(process.env.APP_SECRET, { expiresIn: '1 min', algorithm: 'HS384' }),
-  );
+  on('task', {
+    ...jwtTask(process.env.APP_SECRET, {
+      expiresIn: '1 min',
+      algorithm: 'HS384',
+    }),
+    loadFixtures,
+    createArticle,
+  });
 
   return config;
 };

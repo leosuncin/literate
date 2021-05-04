@@ -11,11 +11,6 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         eslint_flags: --ext '.js' --ext '.ts' --ext '.tsx' .
-    - uses: luke142367/Docker-Lint-Action@v1.0.0
-      with:
-        target: .gitpod.Dockerfile 
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: wemake-services/dotenv-linter@master
       with:
         options: .env.example
@@ -86,6 +81,7 @@ jobs:
         wait-on: 'http://localhost:3000'
       env:
         APP_SECRET: 4C3E89619525956BA3573B8426F6C
+        MONGODB_URL: mongodb://localhost:${{ job.services.mongodb.ports[27017] }}/admin
     - uses: actions/upload-artifact@v2
       if: failure()
       with:
@@ -99,9 +95,7 @@ jobs:
     - run: npx nyc report
     - name: Run Newman
       run: |
-        npx newman run https://api.getpostman.com/collections/367460-806c64d2-beba-4bfe-a2d6-7a346abab79d?apikey=$POSTMAN_API_KEY
-      env:
-        POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+        npx newman run https://www.getpostman.com/collections/836266838ebedb989997
     - uses: actions/upload-artifact@v2
       with:
         name: e2e-coverage
