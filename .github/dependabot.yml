@@ -7,3 +7,6 @@ updates:
       day: sunday
     versioning-strategy: widen
     open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - automerge
