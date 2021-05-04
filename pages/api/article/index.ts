@@ -7,19 +7,18 @@ import {
   withAuthentication,
 } from 'middlewares';
 import { Article } from 'models';
-import { ArticleCreate, Pagination } from 'schemas';
+import { articleCreate, pagination } from 'schemas';
 import { NextHttpHandler } from 'types';
 
 const createArticleHandler: NextHttpHandler = async (req, res) => {
-  const article = new Article(req.body);
-  article.author = req.user;
+  const article = new Article({ ...req.body, author: req.user });
   await article.save();
 
   return res.status(StatusCodes.CREATED).json(article.toJSON());
 };
 
 const findArticleHandler: NextHttpHandler = async (req, res) => {
-  const { page, size } = await Pagination.validate(req.query);
+  const { page, size } = await pagination.validate(req.query);
   const articles = await Article.find()
     .populate('author')
     .limit(size)
@@ -35,7 +34,7 @@ export default catchErrors(
       switch (req.method) {
         case 'POST':
           return withAuthentication(
-            validateBody(ArticleCreate, createArticleHandler),
+            validateBody(articleCreate, createArticleHandler),
           )(req, res);
         case 'GET':
           return findArticleHandler(req, res);

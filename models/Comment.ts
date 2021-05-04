@@ -1,41 +1,71 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
+import type { Document, LeanDocument, Types } from 'mongoose';
 import mongooseIdValidator from 'mongoose-id-validator';
 
-import { Article, User } from '.';
+import type { ArticleDocument } from './Article';
+import type { UserDocument, UserJson } from './User';
 
-export interface Comment extends Document {
+export interface CommentBase {
   body: string;
-  author: User;
-  article: Article;
+  author: Types.ObjectId;
+  article: Types.ObjectId;
 }
 
-const CommentSchema = new Schema<Comment>(
+export interface CommentDocument extends Document<Types.ObjectId>, CommentBase {
+  author: UserDocument['_id'];
+  article: ArticleDocument['_id'];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CommentPopulatedDocument
+  extends Omit<CommentDocument, 'author'> {
+  author: UserDocument;
+  article: ArticleDocument['_id'];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CommentJson
+  extends Omit<
+    LeanDocument<CommentDocument>,
+    '_id' | '__v' | 'author' | 'article' | 'createdAt' | 'updatedAt'
+  > {
+  author: string | UserJson;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const CommentSchema = new mongoose.Schema<CommentDocument>(
   {
     body: {
-      type: Schema.Types.String,
+      type: String,
       required: true,
     },
     author: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
     article: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Article',
       required: true,
     },
   },
   { timestamps: true },
 );
+
 CommentSchema.plugin(mongooseIdValidator, { message: 'not exits' });
-CommentSchema.methods.toJSON = function (this: Comment) {
+
+CommentSchema.methods.toJSON = function (this: CommentDocument) {
   const comment = this.toObject();
 
   comment.id = comment._id;
   delete comment._id;
   delete comment.__v;
   delete comment.article;
+  // @ts-expect-error
   comment.author = this.author.toJSON();
 
   return comment;
@@ -49,4 +79,7 @@ if (
   mongoose.deleteModel('Comment');
 }
 
-export const Comment = mongoose.model<Comment>('Comment', CommentSchema);
+export const Comment = mongoose.model<CommentDocument>(
+  'Comment',
+  CommentSchema,
+);

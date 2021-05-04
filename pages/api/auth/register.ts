@@ -6,7 +6,7 @@ import {
   validateMethod,
 } from 'middlewares';
 import { User } from 'models';
-import { AuthRegister } from 'schemas';
+import { authRegister } from 'schemas';
 import { NextHttpHandler } from 'types';
 import { signJWT } from 'utils/jwt';
 
@@ -19,5 +19,5 @@ const registerHandle: NextHttpHandler = async (req, res) => {
 };
 
 export default catchErrors(
-  validateMethod('POST', validateBody(AuthRegister, connectDB(registerHandle))),
+  validateMethod('POST', validateBody(authRegister, connectDB(registerHandle))),
 );

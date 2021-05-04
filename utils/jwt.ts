@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { User } from 'models';
+import type { UserDocument as User } from 'models';
 
 export type JwtPayload = {
   id: string;
@@ -9,7 +9,7 @@ export type JwtPayload = {
   iss: string;
 };
 
-export function signJWT(user: User): string {
+export function signJWT(user: Pick<User, '_id' | 'displayName'>): string {
   return jwt.sign(
     {
       id: user._id,

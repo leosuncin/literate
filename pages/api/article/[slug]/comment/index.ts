@@ -7,19 +7,18 @@ import {
   withAuthentication,
 } from 'middlewares';
 import { Article, Comment } from 'models';
-import { CommentSchema, Pagination } from 'schemas';
+import { commentCreate, pagination } from 'schemas';
 import { NextHttpHandler, NotFoundError } from 'types';
 
 const createCommentHandler: NextHttpHandler = async (req, res) => {
-  const comment = new Comment(req.body);
   const article = await Article.findOne({ slug: req.query.slug as string });
-  comment.article = article;
-  comment.author = req.user;
 
   if (!article)
     throw new NotFoundError(
       `Not found any article with slug: ${req.query.slug}`,
     );
+
+  const comment = new Comment({ ...req.body, author: req.user, article });
 
   await comment.save();
 
@@ -27,17 +26,18 @@ const createCommentHandler: NextHttpHandler = async (req, res) => {
 };
 
 const listCommentHandler: NextHttpHandler = async (req, res) => {
-  const { page, size } = await Pagination.validate(req.query);
+  const { page, size } = await pagination.validate(req.query);
   const article = await Article.findOne({ slug: req.query.slug as string });
-  const comments = await Comment.find({ article })
-    .populate('author')
-    .limit(size)
-    .skip(size * (page - 1));
 
   if (!article)
     throw new NotFoundError(
       `Not found any article with slug: ${req.query.slug}`,
     );
+
+  const comments = await Comment.find({ article: article._id })
+    .populate('author')
+    .limit(size)
+    .skip(size * (page - 1));
 
   return res.json(comments);
 };
@@ -49,7 +49,7 @@ export default catchErrors(
       switch (req.method) {
         case 'POST':
           return withAuthentication(
-            validateBody(CommentSchema, createCommentHandler),
+            validateBody(commentCreate, createCommentHandler),
           )(req, res);
         case 'GET':
           return listCommentHandler(req, res);

@@ -157,7 +157,7 @@ describe('Comment API', () => {
     });
 
     cy.api({
-      url: `${url}/${faker.random.uuid()}`,
+      url: `${url}/${faker.datatype.uuid()}`,
       method: 'POST',
       body: {
         body: faker.lorem.paragraph(),

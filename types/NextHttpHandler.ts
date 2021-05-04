@@ -1,4 +1,4 @@
-import type { User } from 'models';
+import type { UserDocument as User } from 'models';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import type { ErrorResponse } from './HttpError';

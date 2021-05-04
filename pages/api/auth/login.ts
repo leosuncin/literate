@@ -5,7 +5,7 @@ import {
   validateMethod,
 } from 'middlewares';
 import { User } from 'models';
-import { AuthLogin } from 'schemas';
+import { authLogin } from 'schemas';
 import { NextHttpHandler, UnauthorizedError } from 'types';
 import { signJWT } from 'utils/jwt';
 
@@ -29,5 +29,5 @@ const loginHandler: NextHttpHandler = async (req, res) => {
 };
 
 export default catchErrors(
-  validateMethod('POST', validateBody(AuthLogin, connectDB(loginHandler))),
+  validateMethod('POST', validateBody(authLogin, connectDB(loginHandler))),
 );

@@ -1,23 +1,28 @@
 import { validate } from '@cypress/schema-tools';
 import faker from 'faker';
 import { StatusCodes } from 'http-status-codes';
+import type { ArticleJson } from 'models/Article';
 
 import { formats, schemas } from '../../schemas';
 
 const validateArticleSchema = validate(schemas, formats)('Article', '1.0.0');
 const validateErrorSchema = validate(schemas)('ApiError', '1.0.0');
+const user = {
+  _id: '5e9cce858f8fa801aa70f569',
+  fullName: 'John Doe',
+  displayName: 'John',
+  email: 'john@doe.me',
+};
 
 describe('Article API', () => {
   const url = '/api/article';
   let authorization: string;
 
+  before(() => {
+    cy.task('loadFixtures');
+  });
+
   beforeEach(() => {
-    const user = {
-      _id: '5e9cce858f8fa801aa70f569',
-      fullName: 'John Doe',
-      displayName: 'John',
-      email: 'john@doe.me',
-    };
     cy.task('signUser', user).then((jwt: string) => {
       authorization = `Bearer ${jwt}`;
     });
@@ -110,19 +115,8 @@ describe('Article API', () => {
   });
 
   it('should remove one article', () => {
-    cy.api({
-      url: '/api/article',
-      method: 'POST',
-      body: {
-        title: faker.lorem.words(),
-        subtitle: faker.lorem.sentence(),
-        body: faker.lorem.paragraph(),
-        tags: faker.random.words(3).split(' '),
-      },
-      headers: { authorization },
-    })
-      .its('body')
-      .then(article => {
+    cy.task('createArticle', { author: user._id })
+      .then((article: ArticleJson) => {
         return cy.api({
           url: `/api/article/${article.slug}`,
           method: 'DELETE',
@@ -203,7 +197,7 @@ describe('Article API', () => {
         url: '/api/article/2020-nagorno-karabakh-conflict-nxg8n7',
         method: 'PATCH',
         body: {
-          draft: faker.random.boolean(),
+          draft: faker.datatype.boolean(),
         },
         failOnStatusCode: false,
       }).then(({ status, body }) => {
@@ -257,7 +251,7 @@ describe('Article API', () => {
         url: '/api/article/leverage-agile-frameworks-cdg7ud',
         method: 'PATCH',
         body: {
-          draft: faker.random.boolean(),
+          draft: faker.datatype.boolean(),
         },
         headers: { authorization },
         failOnStatusCode: false,
@@ -314,7 +308,7 @@ describe('Article API', () => {
         url,
         method: 'PATCH',
         body: {
-          draft: faker.random.boolean(),
+          draft: faker.datatype.boolean(),
         },
         headers: { authorization },
         failOnStatusCode: false,

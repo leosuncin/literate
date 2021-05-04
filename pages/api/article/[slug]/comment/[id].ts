@@ -6,12 +6,14 @@ import {
   validateMethod,
   withAuthentication,
 } from 'middlewares';
-import { Article, Comment } from 'models';
-import { CommentSchema } from 'schemas';
+import { Article, Comment, CommentPopulatedDocument } from 'models';
+import { commentCreate } from 'schemas';
 import { ForbiddenError, NextHttpHandler, NotFoundError } from 'types';
 
 const showCommentHandler: NextHttpHandler = async (req, res) => {
-  const comment = await Comment.findById(req.query.id).populate('author');
+  const comment = ((await Comment.findById(req.query.id).populate(
+    'author',
+  )) as unknown) as CommentPopulatedDocument;
 
   if (!comment)
     throw new NotFoundError(`Not found any comment with id: ${req.query.id}`);
@@ -20,7 +22,9 @@ const showCommentHandler: NextHttpHandler = async (req, res) => {
 };
 
 const editCommentHandler: NextHttpHandler = async (req, res) => {
-  const comment = await Comment.findById(req.query.id).populate('author');
+  const comment = ((await Comment.findById(req.query.id).populate(
+    'author',
+  )) as unknown) as CommentPopulatedDocument;
 
   if (!comment)
     throw new NotFoundError(`Not found any comment with id: ${req.query.id}`);
@@ -70,7 +74,7 @@ export default catchErrors(
           return showCommentHandler(req, res);
         case 'PUT':
           return withAuthentication(
-            validateBody(CommentSchema, editCommentHandler),
+            validateBody(commentCreate, editCommentHandler),
           )(req, res);
         case 'DELETE':
           return withAuthentication(removeCommentHandler)(req, res);

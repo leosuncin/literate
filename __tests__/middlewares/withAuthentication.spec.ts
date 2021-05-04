@@ -1,6 +1,6 @@
 import faker from 'faker';
 import { withAuthentication } from 'middlewares/withAuthentication';
-import type { User } from 'models';
+import type { UserDocument as User } from 'models';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createMocks } from 'node-mocks-http';

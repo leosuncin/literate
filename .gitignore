@@ -2,6 +2,7 @@
 
 dist/
 out/
+globalConfig.json
 
 ### Node ###
 # Logs

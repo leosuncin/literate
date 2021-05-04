@@ -6,12 +6,6 @@ export interface ErrorResponse {
   errors?: string[];
 }
 
-export interface HttpApiError extends Error {
-  statusCode: number;
-  message: string;
-  context?: Error | string[];
-}
-
 export class HttpApiError extends Error {
   readonly name = 'HttpApiError';
 
