@@ -13,7 +13,7 @@ jobs:
         eslint_flags: --ext '.js' --ext '.ts' --ext '.tsx' .
     - uses: luke142367/Docker-Lint-Action@v1.0.0
       with:
-        target: .gitpod.Dockerfile 
+        target: .gitpod.Dockerfile
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: wemake-services/dotenv-linter@master
@@ -86,6 +86,7 @@ jobs:
         wait-on: 'http://localhost:3000'
       env:
         APP_SECRET: 4C3E89619525956BA3573B8426F6C
+        MONGODB_URL: mongodb://localhost:${{ job.services.mongodb.ports[27017] }}/admin
     - uses: actions/upload-artifact@v2
       if: failure()
       with:
