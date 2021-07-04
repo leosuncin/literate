@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import type { Document, LeanDocument, Query, Types } from 'mongoose';
+import type { Document, LeanDocument, Model, Types } from 'mongoose';
 import mongooseUniqueValidator from 'mongoose-unique-validator';
 import { compare, hash } from 'utils/encrypt';
 
@@ -18,6 +18,8 @@ export interface UserDocument extends Document<Types.ObjectId>, UserBase {
   comparePassword(plainPassword: string): boolean;
 }
 
+export type UserModel = Model<UserDocument>;
+
 export interface UserJson
   extends Omit<
     LeanDocument<UserDocument>,
@@ -33,7 +35,7 @@ export interface UserJson
   updatedAt: string;
 }
 
-const UserSchema = new mongoose.Schema<UserDocument>(
+const UserSchema = new mongoose.Schema<UserDocument, UserModel, UserBase>(
   {
     fullName: {
       type: String,
@@ -99,20 +101,6 @@ UserSchema.pre<UserDocument>('save', function (next) {
 
   return next();
 });
-
-UserSchema.pre<Query<UserDocument, UserDocument>>(
-  'findOneAndUpdate',
-  function (next) {
-    if (this.getUpdate().password != null) {
-      this.setUpdate({
-        ...this.getUpdate(),
-        password: hash(this.getUpdate().password, 512),
-      });
-    }
-
-    return next(null);
-  },
-);
 
 /* istanbul ignore if */
 if (
